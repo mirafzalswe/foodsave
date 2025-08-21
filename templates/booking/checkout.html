@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Оформление заказа - FoodSave{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'booking:cart' %}">Корзина</a></li>
+                    <li class="breadcrumb-item active">Оформление заказа</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Детали заказа</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.delivery_type.id_for_label }}" class="form-label">Тип доставки</label>
+                                {{ form.delivery_type }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">Способ оплаты</label>
+                                {{ form.payment_method }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3" id="addressField">
+                            <label for="{{ form.delivery_address.id_for_label }}" class="form-label">Адрес доставки</label>
+                            {{ form.delivery_address }}
+                            <div class="form-text">Укажите точный адрес для доставки</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Комментарий к заказу</label>
+                            {{ form.notes }}
+                            <div class="form-text">Дополнительные пожелания или инструкции</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check me-2"></i>Подтвердить заказ
+                            </button>
+                            <a href="{% url 'booking:cart' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Вернуться в корзину
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Order Summary -->
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header">
+                    <h5 class="mb-0">Ваш заказ</h5>
+                </div>
+                <div class="card-body">
+                    <div id="orderSummary">
+                        <!-- Order items will be populated by JavaScript -->
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Товары:</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Доставка:</span>
+                        <span id="deliveryFee">$5.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Итого:</strong>
+                        <strong id="total">$5.00</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadOrderSummary();
+    
+    // Handle delivery type change
+    const deliveryTypeSelect = document.getElementById('id_delivery_type');
+    const addressField = document.getElementById('addressField');
+    
+    if (deliveryTypeSelect) {
+        deliveryTypeSelect.addEventListener('change', function() {
+            if (this.value === 'pickup') {
+                addressField.style.display = 'none';
+            } else {
+                addressField.style.display = 'block';
+            }
+        });
+        
+        // Initial state
+        if (deliveryTypeSelect.value === 'pickup') {
+            addressField.style.display = 'none';
+        }
+    }
+    
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    }
+});
+
+function loadOrderSummary() {
+    const cart = JSON.parse(localStorage.getItem('foodsave_cart')) || [];
+    const orderSummary = document.getElementById('orderSummary');
+    
+    if (cart.length === 0) {
+        orderSummary.innerHTML = '<p class="text-muted">Корзина пуста</p>';
+        return;
+    }
+    
+    let html = '';
+    let subtotal = 0;
+    
+    cart.forEach(item => {
+        // Mock data - replace with real API call
+        const mockPrice = 15.99;
+        const mockTitle = 'Пицца Маргарита';
+        const itemTotal = mockPrice * item.quantity;
+        subtotal += itemTotal;
+        
+        html += `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <small class="text-muted">${mockTitle}</small><br>
+                    <small>Количество: ${item.quantity}</small>
+                </div>
+                <span>$${itemTotal.toFixed(2)}</span>
+            </div>
+        `;
+    });
+    
+    orderSummary.innerHTML = html;
+    
+    const deliveryFee = 5.00;
+    const total = subtotal + deliveryFee;
+    
+    document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+}
+</script>
+{% endblock %}

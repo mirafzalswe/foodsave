@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Корзина - FoodSave{% endblock %}
+
+{% block extra_css %}
+<style>
+.cart-item {
+    transition: all 0.3s ease;
+}
+.cart-item:hover {
+    background-color: #f8f9fa;
+}
+.quantity-control {
+    max-width: 120px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-shopping-cart me-2"></i>Корзина
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Cart Items -->
+            <div id="cartItems">
+                <div class="text-center py-5" id="emptyCart">
+                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                    <h4>Корзина пуста</h4>
+                    <p class="text-muted">Добавьте товары из каталога</p>
+                    <a href="{% url 'catalog:catalog' %}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Перейти к покупкам
+                    </a>
+                </div>
+                
+                <!-- Cart items will be populated by JavaScript -->
+                <div id="cartItemsList" style="display: none;">
+                    <!-- Items will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Order Summary -->
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header">
+                    <h5 class="mb-0">Итого</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Товары:</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Доставка:</span>
+                        <span id="deliveryFee">$5.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Всего:</strong>
+                        <strong id="total">$5.00</strong>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'booking:checkout' %}" class="btn btn-primary btn-lg" id="checkoutBtn" style="display: none;">
+                            <i class="fas fa-credit-card me-2"></i>Оформить заказ
+                        </a>
+                        <a href="{% url 'catalog:catalog' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Добавить товары
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cart Item Template -->
+<template id="cartItemTemplate">
+    <div class="card mb-3 cart-item">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-2">
+                    <img src="" alt="" class="img-fluid rounded item-image" style="height: 80px; object-fit: cover;">
+                </div>
+                <div class="col-md-4">
+                    <h6 class="mb-1 item-title"></h6>
+                    <small class="text-muted item-vendor"></small>
+                </div>
+                <div class="col-md-2">
+                    <div class="quantity-control input-group">
+                        <button class="btn btn-outline-secondary quantity-minus" type="button">-</button>
+                        <input type="number" class="form-control text-center quantity-input" value="1" min="1">
+                        <button class="btn btn-outline-secondary quantity-plus" type="button">+</button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="text-center">
+                        <span class="h6 item-price"></span>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="text-center">
+                        <button class="btn btn-outline-danger btn-sm remove-item">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadCartItems();
+    
+    // Update cart display when storage changes
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'foodsave_cart') {
+            loadCartItems();
+        }
+    });
+});
+
+function loadCartItems() {
+    const cart = JSON.parse(localStorage.getItem('foodsave_cart')) || [];
+    const cartItemsList = document.getElementById('cartItemsList');
+    const emptyCart = document.getElementById('emptyCart');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    
+    if (cart.length === 0) {
+        cartItemsList.style.display = 'none';
+        emptyCart.style.display = 'block';
+        checkoutBtn.style.display = 'none';
+        updateOrderSummary(0, 0);
+        return;
+    }
+    
+    cartItemsList.style.display = 'block';
+    emptyCart.style.display = 'none';
+    checkoutBtn.style.display = 'block';
+    
+    cartItemsList.innerHTML = '';
+    let subtotal = 0;
+    
+    cart.forEach((item, index) => {
+        const cartItem = createCartItemElement(item, index);
+        cartItemsList.appendChild(cartItem);
+        
+        // Mock price calculation (replace with real data)
+        const price = 15.99; // This should come from the actual offer data
+        subtotal += price * item.quantity;
+    });
+    
+    updateOrderSummary(subtotal, cart.length);
+}
+
+function createCartItemElement(item, index) {
+    const template = document.getElementById('cartItemTemplate');
+    const cartItem = template.content.cloneNode(true);
+    
+    // Mock data - in real app, this would come from API
+    const mockData = {
+        title: 'Пицца Маргарита',
+        vendor: 'Пиццерия "Вкусно"',
+        price: 15.99,
+        image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=200'
+    };
+    
+    cartItem.querySelector('.item-image').src = mockData.image;
+    cartItem.querySelector('.item-image').alt = mockData.title;
+    cartItem.querySelector('.item-title').textContent = mockData.title;
+    cartItem.querySelector('.item-vendor').textContent = mockData.vendor;
+    cartItem.querySelector('.item-price').textContent = `$${mockData.price}`;
+    cartItem.querySelector('.quantity-input').value = item.quantity;
+    
+    // Add event listeners
+    const quantityInput = cartItem.querySelector('.quantity-input');
+    const minusBtn = cartItem.querySelector('.quantity-minus');
+    const plusBtn = cartItem.querySelector('.quantity-plus');
+    const removeBtn = cartItem.querySelector('.remove-item');
+    
+    minusBtn.addEventListener('click', () => updateQuantity(index, -1));
+    plusBtn.addEventListener('click', () => updateQuantity(index, 1));
+    removeBtn.addEventListener('click', () => removeCartItem(index));
+    
+    quantityInput.addEventListener('change', function() {
+        const newQuantity = parseInt(this.value) || 1;
+        updateCartItemQuantity(index, newQuantity);
+    });
+    
+    return cartItem;
+}
+
+function updateQuantity(index, change) {
+    const cart = JSON.parse(localStorage.getItem('foodsave_cart')) || [];
+    if (cart[index]) {
+        cart[index].quantity = Math.max(1, cart[index].quantity + change);
+        localStorage.setItem('foodsave_cart', JSON.stringify(cart));
+        loadCartItems();
+        updateCartCounter();
+    }
+}
+
+function updateCartItemQuantity(index, quantity) {
+    const cart = JSON.parse(localStorage.getItem('foodsave_cart')) || [];
+    if (cart[index]) {
+        cart[index].quantity = Math.max(1, quantity);
+        localStorage.setItem('foodsave_cart', JSON.stringify(cart));
+        loadCartItems();
+        updateCartCounter();
+    }
+}
+
+function removeCartItem(index) {
+    const cart = JSON.parse(localStorage.getItem('foodsave_cart')) || [];
+    cart.splice(index, 1);
+    localStorage.setItem('foodsave_cart', JSON.stringify(cart));
+    loadCartItems();
+    updateCartCounter();
+    showNotification('Товар удален из корзины', 'info');
+}
+
+function updateOrderSummary(subtotal, itemCount) {
+    const deliveryFee = itemCount > 0 ? 5.00 : 0;
+    const total = subtotal + deliveryFee;
+    
+    document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('deliveryFee').textContent = `$${deliveryFee.toFixed(2)}`;
+    document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+}
+</script>
+{% endblock %}

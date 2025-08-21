@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ item.title }} - FoodSave{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'catalog:catalog' %}">Каталог</a></li>
+            {% if item.category %}
+                <li class="breadcrumb-item"><a href="{% url 'catalog:category' item.category.slug %}">{{ item.category.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ item.title }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-lg-6 mb-4">
+            {% if images %}
+                <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in images %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img src="{{ image.image.url }}" class="d-block w-100 rounded" alt="{{ item.title }}" style="height: 400px; object-fit: cover;">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if images|length > 1 %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <i class="fas fa-image fa-5x text-muted"></i>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <h1 class="mb-3">{{ item.title }}</h1>
+            
+            <div class="mb-3">
+                <span class="badge bg-primary">{{ item.vendor.name }}</span>
+                {% if item.category %}
+                    <span class="badge bg-secondary">{{ item.category.name }}</span>
+                {% endif %}
+                <span class="badge bg-info">{{ item.get_unit_display }}</span>
+            </div>
+            
+            <p class="lead mb-4">{{ item.description }}</p>
+            
+            <!-- Tags -->
+            {% if item.tags %}
+                <div class="mb-4">
+                    <h6>Особенности:</h6>
+                    {% for tag in item.tags %}
+                        <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Available Offers -->
+            <div class="mb-4">
+                <h5>Доступные предложения</h5>
+                {% for offer in offers %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <div>
+                                            <h5 class="text-success mb-1">${{ offer.current_price }}</h5>
+                                            {% if offer.original_price != offer.current_price %}
+                                                <small class="text-muted text-decoration-line-through">${{ offer.original_price }}</small>
+                                                <span class="badge bg-danger ms-2">-{{ offer.discount_percent|floatformat:0 }}%</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Доступно: {{ offer.quantity_available }} шт.</small><br>
+                                    <small class="text-muted">До: {{ offer.expires_at|date:"d.m.Y H:i" }}</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-primary w-100 add-to-cart" data-offer-id="{{ offer.id }}">
+                                        <i class="fas fa-shopping-cart me-2"></i>В корзину
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        В данный момент предложений нет
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Vendor Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">О ресторане</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        {% if item.vendor.logo %}
+                            <img src="{{ item.vendor.logo.url }}" alt="{{ item.vendor.name }}" class="rounded me-3" width="50" height="50">
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-0">{{ item.vendor.name }}</h6>
+                            <small class="text-muted">{{ item.vendor.get_type_display }}</small>
+                        </div>
+                    </div>
+                    {% if item.vendor.description %}
+                        <p class="mb-2">{{ item.vendor.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    <div class="d-flex align-items-center">
+                        <span class="text-warning me-2">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= item.vendor.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        <span class="text-muted">{{ item.vendor.rating }}/5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cart Modal -->
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Товар добавлен в корзину</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Товар успешно добавлен в корзину!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Продолжить покупки</button>
+                <a href="#" class="btn btn-primary">Перейти в корзину</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.add-to-cart').forEach(button => {
+    button.addEventListener('click', function() {
+        const offerId = this.dataset.offerId;
+        
+        // Здесь будет AJAX запрос для добавления в корзину
+        // Пока просто показываем модальное окно
+        const modal = new bootstrap.Modal(document.getElementById('cartModal'));
+        modal.show();
+        
+        console.log('Adding offer to cart:', offerId);
+    });
+});
+</script>
+{% endblock %}
