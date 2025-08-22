@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Каталог{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list me-2"></i>Категории</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'catalog:catalog' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-th-large me-2"></i>Все категории
+                    </a>
+                    {% for cat in categories %}
+                        <a href="{% url 'catalog:category' cat.slug %}" class="list-group-item list-group-item-action {% if cat.slug == category.slug %}active{% endif %}">
+                            {% if cat.icon %}
+                                <img src="{{ cat.icon.url }}" width="20" height="20" class="me-2">
+                            {% else %}
+                                <i class="fas fa-tag me-2"></i>
+                            {% endif %}
+                            {{ cat.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'catalog:catalog' %}">Каталог</a></li>
+                        <li class="breadcrumb-item active">{{ category.name }}</li>
+                    </ol>
+                </nav>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2>
+                        {% if category.icon %}
+                            <img src="{{ category.icon.url }}" width="40" height="40" class="me-2">
+                        {% else %}
+                            <i class="fas fa-tag text-primary me-2"></i>
+                        {% endif %}
+                        {{ category.name }}
+                    </h2>
+                    <span class="badge bg-primary">{{ items|length }} товаров</span>
+                </div>
+            </div>
+            
+            <!-- Items Grid -->
+            {% if items %}
+            <div class="row">
+                {% for item in items %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card item-card h-100 fade-in" style="animation-delay: {{ forloop.counter0|floatformat:1 }}s">
+                        {% if item.images.first %}
+                        <img src="{{ item.images.first.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title">{{ item.title }}</h6>
+                            <p class="card-text text-muted small">{{ item.description|truncatewords:10 }}</p>
+                            
+                            <div class="mb-2">
+                                <span class="badge bg-primary">{{ item.vendor.name }}</span>
+                                <span class="badge bg-info">{{ item.get_unit_display }}</span>
+                            </div>
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        {% for offer in item.offers.all %}
+                                            {% if offer.is_active and offer.status == 'available' %}
+                                                <div class="price-info">
+                                                    {% if offer.discount_percent > 0 %}
+                                                        <span class="text-decoration-line-through text-muted">{{ offer.original_price }} сум</span>
+                                                        <span class="text-success fw-bold">{{ offer.discounted_price }} сум</span>
+                                                        <span class="badge bg-danger">-{{ offer.discount_percent }}%</span>
+                                                    {% else %}
+                                                        <span class="fw-bold">{{ offer.original_price }} сум</span>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% empty %}
+                                            <span class="fw-bold text-success">Цена по запросу</span>
+                                        {% endfor %}
+                                    </div>
+                                    <div>
+                                        <a href="{% url 'catalog:item_detail' item.pk %}" class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-primary" onclick="addToCart({{ item.pk }}, '{{ item.title|escapejs }}', {% for offer in item.offers.all %}{% if offer.is_active and offer.status == 'available' %}{{ offer.discounted_price|default:offer.original_price }}{% endif %}{% empty %}1000{% endfor %})">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4>Товары не найдены</h4>
+                <p class="text-muted">В категории "{{ category.name }}" пока нет товаров</p>
+                <a href="{% url 'catalog:catalog' %}" class="btn btn-primary">Посмотреть все товары</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add to cart functionality
+function addToCart(itemId, itemName, itemPrice) {
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    // Check if item already exists
+    let existingItem = cart.find(item => item.id === itemId);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: itemId,
+            name: itemName,
+            price: itemPrice,
+            quantity: 1
+        });
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    // Show success notification
+    showNotification(`${itemName} добавлен в корзину!`, 'success');
+    
+    // Update cart count if badge exists
+    updateCartCount();
+}
+
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
+}
+
+function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    let totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    let cartBadge = document.querySelector('.cart-count');
+    if (cartBadge) {
+        cartBadge.textContent = totalItems;
+        cartBadge.style.display = totalItems > 0 ? 'inline' : 'none';
+    }
+}
+
+// Update cart count on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartCount();
+    
+    // Add animation delays to cards
+    const cards = document.querySelectorAll('.item-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+});
+</script>
+{% endblock %}

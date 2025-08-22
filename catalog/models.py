@@ -3,6 +3,10 @@ from django.db import models
 # Create your models here.
 from vendors.models import Vendor, Branch
 from users.models import User
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 
 class Category(models.Model):
@@ -57,7 +61,7 @@ class Offer(models.Model):
     current_price = models.DecimalField(max_digits=10, decimal_places=2)
     original_price = models.DecimalField(max_digits=10, decimal_places=2)
     vat_percent = models.FloatField(default=0.0)
-    discount_percent = models.FloatField()
+    discount_percent = models.FloatField(default=0.0)
     quantity_available = models.PositiveIntegerField()
     expires_at = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
@@ -71,3 +75,6 @@ class Offer(models.Model):
     def is_expired(self):
         from django.utils import timezone
         return timezone.now() > self.expires_at
+
+
+

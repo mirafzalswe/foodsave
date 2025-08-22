@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Карта - Ближайшие товары{% endblock %}
+
+{% block extra_css %}
+<style>
+#map {
+    height: 500px;
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.item-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.distance-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.map-controls {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.loading-spinner {
+    display: none;
+    text-align: center;
+    padding: 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-map-marker-alt text-primary me-2"></i>Ближайшие товары</h2>
+                <a href="{% url 'catalog:catalog' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Назад к каталогу
+                </a>
+            </div>
+            
+            <div class="map-controls">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-1">📍 Ваше местоположение</h5>
+                        <small class="text-muted">Показаны ближайшие 20 товаров в радиусе до 10 км</small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-success" onclick="updateLocation()">
+                            <i class="fas fa-sync-alt me-2"></i>Обновить
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Map Container -->
+            <div id="map" class="mb-4"></div>
+            
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2">Поиск ближайших товаров...</p>
+            </div>
+            
+            <!-- Nearby Items List -->
+            {% if items_data %}
+            <div class="row">
+                <div class="col-12">
+                    <h4 class="mb-3">Найдено товаров: {{ items_data|length }}</h4>
+                </div>
+                {% for item_data in items_data %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card item-card h-100 position-relative">
+                        <div class="distance-badge">
+                            {{ item_data.distance }} км
+                        </div>
+                        
+                        {% if item_data.item.image %}
+                        <img src="{{ item_data.item.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title">{{ item_data.item.title }}</h6>
+                            <p class="card-text text-muted small">{{ item_data.item.description|truncatewords:10 }}</p>
+                            
+                            <div class="mb-2">
+                                <span class="badge bg-primary">{{ item_data.item.vendor.name }}</span>
+                                {% if item_data.item.category %}
+                                    <span class="badge bg-secondary">{{ item_data.item.category.name }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        {% for offer in item_data.item.offers.all %}
+                                            {% if offer.is_active %}
+                                                <div class="price-info">
+                                                    {% if offer.discount_percent > 0 %}
+                                                        <span class="text-decoration-line-through text-muted">{{ offer.original_price }} сум</span>
+                                                        <span class="text-success fw-bold">{{ offer.discounted_price }} сум</span>
+                                                        <span class="badge bg-danger">-{{ offer.discount_percent }}%</span>
+                                                    {% else %}
+                                                        <span class="fw-bold">{{ offer.original_price }} сум</span>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div>
+                                        <a href="{% url 'catalog:item_detail' item_data.item.pk %}" class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-primary" onclick="addToCart({{ item_data.item.pk }}, '{{ item_data.item.title|escapejs }}', 1000)">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                <h4>Товары не найдены</h4>
+                <p class="text-muted">В вашем районе пока нет доступных товаров</p>
+                <a href="{% url 'catalog:catalog' %}" class="btn btn-primary">Посмотреть весь каталог</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let map;
+let userMarker;
+let itemMarkers = [];
+
+function initMap() {
+    const userLat = parseFloat('{{ user_lat }}');
+    const userLng = parseFloat('{{ user_lng }}');
+    
+    if (!userLat || !userLng) {
+        document.getElementById('map').innerHTML = '<div class="alert alert-warning">Не удалось определить ваше местоположение</div>';
+        return;
+    }
+    
+    // Initialize map
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13,
+        center: { lat: userLat, lng: userLng },
+        styles: [
+            {
+                featureType: 'poi',
+                elementType: 'labels',
+                stylers: [{ visibility: 'off' }]
+            }
+        ]
+    });
+    
+    // Add user location marker
+    userMarker = new google.maps.Marker({
+        position: { lat: userLat, lng: userLng },
+        map: map,
+        title: 'Ваше местоположение',
+        icon: {
+            url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+        }
+    });
+    
+    // Add item markers
+    const itemsData = [
+        {% for item_data in items_data %}
+        {
+            lat: {{ item_data.lat }},
+            lng: {{ item_data.lng }},
+            title: "{{ item_data.item.title|escapejs }}",
+            vendor: "{{ item_data.item.vendor.name|escapejs }}",
+            distance: {{ item_data.distance }},
+            url: "{% url 'catalog:item_detail' item_data.item.pk %}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    itemsData.forEach((item, index) => {
+        const marker = new google.maps.Marker({
+            position: { lat: item.lat, lng: item.lng },
+            map: map,
+            title: `${item.title} (${item.distance} км)`,
+            icon: {
+                url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+            }
+        });
+        
+        const infoWindow = new google.maps.InfoWindow({
+            content: `
+                <div class="p-2">
+                    <h6>${item.title}</h6>
+                    <p class="mb-1"><strong>${item.vendor}</strong></p>
+                    <p class="mb-1">Расстояние: ${item.distance} км</p>
+                    <a href="${item.url}" class="btn btn-sm btn-primary">Подробнее</a>
+                </div>
+            `
+        });
+        
+        marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+        });
+        
+        itemMarkers.push(marker);
+    });
+}
+
+function updateLocation() {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            window.location.href = `/catalog/map/?lat=${lat}&lng=${lng}`;
+        }, function(error) {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            alert('Не удалось получить ваше местоположение');
+        });
+    }
+}
+
+// Cart functionality
+function addToCart(itemId, itemName, itemPrice) {
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    let existingItem = cart.find(item => item.id === itemId);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: itemId,
+            name: itemName,
+            price: itemPrice,
+            quantity: 1
+        });
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    // Show success toast
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `
+        <div class="alert alert-success alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999;">
+            <i class="fas fa-check-circle me-2"></i>${itemName} добавлен в корзину!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+    
+    updateCartCount();
+}
+
+function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    let totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    let cartBadge = document.querySelector('.cart-count');
+    if (cartBadge) {
+        cartBadge.textContent = totalItems;
+        cartBadge.style.display = totalItems > 0 ? 'inline' : 'none';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartCount();
+    
+    // Load Google Maps API
+    if (typeof google === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+    } else {
+        initMap();
+    }
+});
+</script>
+{% endblock %}

@@ -4,140 +4,182 @@
 {% block title %}FoodSave - Главная{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-section bg-primary text-white py-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Экономьте на еде с FoodSave</h1>
-                <p class="lead mb-4">Покупайте качественные продукты и готовые блюда по сниженным ценам. Помогаем ресторанам избежать потерь, а вам - сэкономить.</p>
-                <a href="{% url 'catalog:catalog' %}" class="btn btn-light btn-lg">
-                    <i class="fas fa-shopping-cart me-2"></i>Начать покупки
-                </a>
-            </div>
-            <div class="col-lg-6">
-                <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                     alt="Food" class="img-fluid rounded shadow">
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Features Section -->
-<section class="py-5">
-    <div class="container">
-        <div class="row text-center mb-5">
-            <div class="col-12">
-                <h2 class="fw-bold">Почему выбирают FoodSave?</h2>
-                <p class="text-muted">Преимущества нашего сервиса</p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="feature-icon bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                            <i class="fas fa-percentage fa-lg"></i>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <!-- Main Buttons -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <a href="{% url 'catalog:catalog' %}?category=dishes" class="btn btn-primary btn-lg w-100 py-4 main-category-btn">
+                        <div class="d-flex flex-column align-items-center">
+                            <i class="fas fa-utensils fa-3x mb-3"></i>
+                            <h4 class="mb-0">Блюда</h4>
+                            <small class="text-light">Готовые блюда и еда</small>
                         </div>
-                        <h5 class="card-title">Скидки до 50%</h5>
-                        <p class="card-text">Покупайте качественную еду со значительными скидками</p>
-                    </div>
+                    </a>
                 </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="feature-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                            <i class="fas fa-leaf fa-lg"></i>
+                <div class="col-md-6">
+                    <a href="{% url 'catalog:catalog' %}?category=products" class="btn btn-success btn-lg w-100 py-4 main-category-btn">
+                        <div class="d-flex flex-column align-items-center">
+                            <i class="fas fa-shopping-basket fa-3x mb-3"></i>
+                            <h4 class="mb-0">Продукты</h4>
+                            <small class="text-light">Свежие продукты</small>
                         </div>
-                        <h5 class="card-title">Экологично</h5>
-                        <p class="card-text">Помогаем сократить пищевые отходы и заботимся о планете</p>
-                    </div>
+                    </a>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="feature-icon bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                            <i class="fas fa-clock fa-lg"></i>
+            
+            <!-- Filters Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Фильтры
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{% url 'catalog:catalog' %}" class="row g-3">
+                        <!-- Location Filter -->
+                        <div class="col-md-6">
+                            <label class="form-label">Район</label>
+                            <select name="location" class="form-select">
+                                <option value="">Все районы</option>
+                                <option value="center">Центр</option>
+                                <option value="north">Север</option>
+                                <option value="south">Юг</option>
+                                <option value="east">Восток</option>
+                                <option value="west">Запад</option>
+                            </select>
                         </div>
-                        <h5 class="card-title">Быстро и удобно</h5>
-                        <p class="card-text">Заказывайте онлайн и получайте еду в удобное время</p>
-                    </div>
+                        
+                        <!-- Price Range -->
+                        <div class="col-md-6">
+                            <label class="form-label">Цена</label>
+                            <select name="price_range" class="form-select">
+                                <option value="">Любая цена</option>
+                                <option value="0-500">До 500 ₸</option>
+                                <option value="500-1000">500-1000 ₸</option>
+                                <option value="1000-2000">1000-2000 ₸</option>
+                                <option value="2000+">Свыше 2000 ₸</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Discount -->
+                        <div class="col-md-6">
+                            <label class="form-label">Скидка</label>
+                            <select name="discount" class="form-select">
+                                <option value="">Любая скидка</option>
+                                <option value="10">От 10%</option>
+                                <option value="20">От 20%</option>
+                                <option value="30">От 30%</option>
+                                <option value="50">От 50%</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Vendor Type -->
+                        <div class="col-md-6">
+                            <label class="form-label">Тип заведения</label>
+                            <select name="vendor_type" class="form-select">
+                                <option value="">Все заведения</option>
+                                <option value="restaurant">Ресторан</option>
+                                <option value="cafe">Кафе</option>
+                                <option value="store">Магазин</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Time Filter -->
+                        <div class="col-md-6">
+                            <label class="form-label">Время получения</label>
+                            <select name="pickup_time" class="form-select">
+                                <option value="">Любое время</option>
+                                <option value="morning">Утром (8:00-12:00)</option>
+                                <option value="afternoon">Днем (12:00-18:00)</option>
+                                <option value="evening">Вечером (18:00-22:00)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Dietary Preferences -->
+                        <div class="col-md-6">
+                            <label class="form-label">Особенности</label>
+                            <select name="dietary" class="form-select">
+                                <option value="">Без ограничений</option>
+                                <option value="vegetarian">Вегетарианское</option>
+                                <option value="vegan">Веганское</option>
+                                <option value="halal">Халяль</option>
+                                <option value="gluten_free">Без глютена</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-search me-2"></i>Найти предложения
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>Сбросить
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-</section>
+</div>
+{% endblock %}
 
-<!-- Popular Categories -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="row mb-4">
-            <div class="col-12 text-center">
-                <h2 class="fw-bold">Популярные категории</h2>
-                <p class="text-muted">Выберите то, что вам нравится</p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3 col-sm-6 mb-4">
-                <div class="category-card text-center">
-                    <div class="category-icon bg-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="fas fa-pizza-slice fa-2x"></i>
-                    </div>
-                    <h5>Пицца</h5>
-                    <p class="text-muted">Свежая пицца от лучших пиццерий</p>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 mb-4">
-                <div class="category-card text-center">
-                    <div class="category-icon bg-success text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="fas fa-seedling fa-2x"></i>
-                    </div>
-                    <h5>Здоровая еда</h5>
-                    <p class="text-muted">Полезные и питательные блюда</p>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 mb-4">
-                <div class="category-card text-center">
-                    <div class="category-icon bg-warning text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="fas fa-hamburger fa-2x"></i>
-                    </div>
-                    <h5>Бургеры</h5>
-                    <p class="text-muted">Сочные бургеры и фастфуд</p>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 mb-4">
-                <div class="category-card text-center">
-                    <div class="category-icon bg-info text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="fas fa-ice-cream fa-2x"></i>
-                    </div>
-                    <h5>Десерты</h5>
-                    <p class="text-muted">Сладкие лакомства и выпечка</p>
-                </div>
-            </div>
-        </div>
-        <div class="text-center">
-            <a href="{% url 'catalog:catalog' %}" class="btn btn-primary btn-lg">
-                Смотреть все категории
-            </a>
-        </div>
-    </div>
-</section>
+{% block extra_css %}
+<style>
+.main-category-btn {
+    border: none;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
 
-<!-- CTA Section -->
-<section class="py-5 bg-primary text-white">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Готовы начать экономить?</h2>
-        <p class="lead mb-4">Присоединяйтесь к тысячам довольных клиентов</p>
-        {% if not user.is_authenticated %}
-            <a href="{% url 'users:register' %}" class="btn btn-light btn-lg me-3">
-                Зарегистрироваться
-            </a>
-        {% endif %}
-        <a href="{% url 'catalog:catalog' %}" class="btn btn-outline-light btn-lg">
-            Посмотреть предложения
-        </a>
-    </div>
-</section>
+.main-category-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.main-category-btn i {
+    transition: transform 0.3s ease;
+}
+
+.main-category-btn:hover i {
+    transform: scale(1.1);
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px 15px 0 0 !important;
+}
+
+.form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    transition: border-color 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+    border: none;
+}
+</style>
 {% endblock %}
