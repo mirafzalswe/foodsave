@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Добавить предложение - {{ item.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient text-white text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-percent me-2"></i>
+                        Добавить предложение
+                    </h3>
+                    <p class="mb-0 opacity-75">{{ item.title }}</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Item Preview -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3">
+                                            {% if item.images.first %}
+                                                <img src="{{ item.images.first.image.url }}" 
+                                                     class="img-fluid rounded" alt="{{ item.title }}"
+                                                     style="max-height: 100px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="bg-secondary rounded d-flex align-items-center justify-content-center" 
+                                                     style="height: 100px;">
+                                                    <i class="fas fa-image fa-2x text-white"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h5 class="mb-1">{{ item.title }}</h5>
+                                            <p class="text-muted mb-1">{{ item.category.name }}</p>
+                                            <p class="mb-0 small">{{ item.description|truncatechars:100 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Pricing Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-money-bill-wave me-2"></i>Ценообразование
+                                </h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label for="{{ form.original_price.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-tag me-2 text-secondary"></i>Обычная цена *
+                                </label>
+                                <div class="input-group">
+                                    {{ form.original_price }}
+                                    <span class="input-group-text">₸</span>
+                                </div>
+                                <div class="form-text">Базовая цена товара</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.discount_percent.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-percent me-2 text-warning"></i>Скидка
+                                </label>
+                                <div class="input-group">
+                                    {{ form.discount_percent }}
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <div class="form-text">Размер скидки (0-100%)</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-calculator me-2 text-success"></i>Итоговая цена
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="final-price" readonly>
+                                    <span class="input-group-text">₸</span>
+                                </div>
+                                <div class="form-text">Автоматический расчёт</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Branch Selection -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.branch.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt me-2 text-danger"></i>Филиал *
+                                </label>
+                                {{ form.branch }}
+                                <div class="form-text">В каком филиале доступен товар</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.quantity.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-boxes me-2 text-info"></i>Количество
+                                </label>
+                                {{ form.quantity }}
+                                <div class="form-text">Доступное количество (0 = неограниченно)</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Validity Period -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-calendar me-2"></i>Период действия
+                                </h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.start_date.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-play me-2 text-success"></i>Дата начала *
+                                </label>
+                                {{ form.start_date }}
+                                <div class="form-text">Когда предложение станет активным</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.end_date.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-stop me-2 text-danger"></i>Дата окончания
+                                </label>
+                                {{ form.end_date }}
+                                <div class="form-text">Оставьте пустым для бессрочного предложения</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label fw-bold" for="{{ form.is_active.id_for_label }}">
+                                        <i class="fas fa-toggle-on me-2 text-success"></i>Предложение активно
+                                    </label>
+                                    <div class="form-text">Активные предложения отображаются в каталоге</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Price Preview Card -->
+                        <div class="card border-success mb-4" id="price-preview" style="display: none;">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="fas fa-eye me-2"></i>Предварительный просмотр</h6>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <h6 class="text-muted">Обычная цена</h6>
+                                        <h4 class="text-muted"><s><span id="preview-original">0</span> ₸</s></h4>
+                                    </div>
+                                    <div class="col-4">
+                                        <h6 class="text-warning">Скидка</h6>
+                                        <h4 class="text-warning"><span id="preview-discount">0</span>%</h4>
+                                    </div>
+                                    <div class="col-4">
+                                        <h6 class="text-success">Итоговая цена</h6>
+                                        <h4 class="text-success"><span id="preview-final">0</span> ₸</h4>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="badge bg-success fs-6">
+                                        Экономия: <span id="preview-savings">0</span> ₸
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                            <a href="{% url 'vendors:manage_items' item.vendor.id %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Назад
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i>Создать предложение
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Help Card -->
+            <div class="card mt-4 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Советы по созданию предложений</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-percent me-2 text-warning"></i>Скидки</h6>
+                            <ul class="small">
+                                <li>Используйте привлекательные скидки (10-50%)</li>
+                                <li>Круглые числа работают лучше (20%, 30%)</li>
+                                <li>Учитывайте конкурентов</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-clock me-2 text-info"></i>Время</h6>
+                            <ul class="small">
+                                <li>Ограниченные предложения создают спрос</li>
+                                <li>Планируйте акции на выходные</li>
+                                <li>Обновляйте предложения регулярно</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+}
+
+.form-label {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+.input-group-text {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-left: none;
+}
+
+.form-control:focus + .input-group-text {
+    border-color: #ffc107;
+}
+
+.btn-lg {
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+}
+
+.card {
+    border-radius: 15px;
+}
+
+.form-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+#price-preview {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Price calculation
+function calculatePrice() {
+    const originalPrice = parseFloat(document.getElementById('id_original_price').value) || 0;
+    const discountPercent = parseFloat(document.getElementById('id_discount_percent').value) || 0;
+    
+    if (originalPrice > 0) {
+        const discountAmount = (originalPrice * discountPercent) / 100;
+        const finalPrice = originalPrice - discountAmount;
+        
+        // Update final price input
+        document.getElementById('final-price').value = finalPrice.toFixed(0);
+        
+        // Update preview
+        document.getElementById('preview-original').textContent = originalPrice.toFixed(0);
+        document.getElementById('preview-discount').textContent = discountPercent.toFixed(0);
+        document.getElementById('preview-final').textContent = finalPrice.toFixed(0);
+        document.getElementById('preview-savings').textContent = discountAmount.toFixed(0);
+        
+        // Show preview
+        document.getElementById('price-preview').style.display = 'block';
+    } else {
+        document.getElementById('price-preview').style.display = 'none';
+    }
+}
+
+// Event listeners for price calculation
+document.getElementById('id_original_price').addEventListener('input', calculatePrice);
+document.getElementById('id_discount_percent').addEventListener('input', function() {
+    const value = parseFloat(this.value);
+    if (value > 100) {
+        this.value = 100;
+    } else if (value < 0) {
+        this.value = 0;
+    }
+    calculatePrice();
+});
+
+// Set default dates
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const startDateInput = document.getElementById('id_start_date');
+    
+    if (startDateInput && !startDateInput.value) {
+        startDateInput.value = today.toISOString().split('T')[0];
+    }
+    
+    // Initial calculation
+    calculatePrice();
+});
+
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Show error message
+                    const alertHtml = `
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Пожалуйста, заполните все обязательные поля корректно.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                    form.insertAdjacentHTML('afterbegin', alertHtml);
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Quick discount buttons
+function setDiscount(percent) {
+    document.getElementById('id_discount_percent').value = percent;
+    calculatePrice();
+}
+
+// Add quick discount buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const discountInput = document.getElementById('id_discount_percent');
+    const quickButtons = document.createElement('div');
+    quickButtons.className = 'mt-2';
+    quickButtons.innerHTML = `
+        <small class="text-muted d-block mb-1">Быстрый выбор:</small>
+        <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn btn-outline-warning" onclick="setDiscount(10)">10%</button>
+            <button type="button" class="btn btn-outline-warning" onclick="setDiscount(20)">20%</button>
+            <button type="button" class="btn btn-outline-warning" onclick="setDiscount(30)">30%</button>
+            <button type="button" class="btn btn-outline-warning" onclick="setDiscount(50)">50%</button>
+        </div>
+    `;
+    discountInput.parentNode.appendChild(quickButtons);
+});
+</script>
+{% endblock %}

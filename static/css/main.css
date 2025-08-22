@@ -67,41 +67,95 @@ body {
 /* Item Cards */
 .item-card {
     transition: all 0.3s ease;
-    border: 1px solid #e9ecef;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    background: white;
 }
 
 .item-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-    border-color: #007bff;
+    transform: translateY(-8px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.item-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+}
+
+.item-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.item-card .card-body {
+    padding: 1.25rem;
+}
+
+.item-card .card-title {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.item-card .card-text {
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+/* Image placeholder styling */
+.image-placeholder {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    height: 200px;
+    border-radius: 10px 10px 0 0;
+}
+
+.image-placeholder i {
+    opacity: 0.7;
 }
 
 /* Navigation */
 .navbar {
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
     backdrop-filter: blur(10px);
-    box-shadow: var(--box-shadow);
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    border-bottom: none;
+    padding: 1rem 0;
 }
 
 .navbar-brand {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
-    background: linear-gradient(45deg, var(--success-color), var(--primary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: white !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.navbar-brand:hover {
+    color: #f8f9fa !important;
+    transform: scale(1.05);
 }
 
 .navbar-nav .nav-link {
     font-weight: 500;
     transition: var(--transition);
     position: relative;
+    color: rgba(255,255,255,0.9) !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 25px;
+    margin: 0 0.2rem;
 }
 
 .navbar-nav .nav-link:hover {
-    color: var(--primary-color) !important;
-    transform: translateY(-1px);
+    color: white !important;
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
 }
 
 .navbar-nav .nav-link::after {
@@ -109,15 +163,42 @@ body {
     position: absolute;
     width: 0;
     height: 2px;
-    bottom: 0;
+    bottom: 5px;
     left: 50%;
-    background: var(--primary-color);
+    background: white;
     transition: var(--transition);
+    border-radius: 2px;
 }
 
 .navbar-nav .nav-link:hover::after {
-    width: 100%;
-    left: 0;
+    width: 80%;
+    left: 10%;
+}
+
+.navbar-toggler {
+    border: 2px solid rgba(255,255,255,0.3);
+    padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.25);
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border-radius: 10px;
+    margin-top: 0.5rem;
+}
+
+.dropdown-item {
+    padding: 0.7rem 1.5rem;
+    transition: var(--transition);
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
 }
 
 /* Buttons */
@@ -326,3 +407,110 @@ footer a:hover {
     from { transform: translateY(30px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+
+/* Enhanced Image Styling */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.vendor-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.category-icon img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+/* Enhanced Cards */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    background: white;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+}
+
+/* Price and Badge Styling */
+.price-tag {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #28a745;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.discount-badge {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    color: white;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+/* Search Form Enhancement */
+.search-form {
+    background: rgba(255,255,255,0.1);
+    border-radius: 25px;
+    padding: 0.25rem;
+}
+
+.search-form .form-control {
+    border: none;
+    background: transparent;
+    color: white;
+    border-radius: 20px;
+}
+
+.search-form .form-control::placeholder {
+    color: rgba(255,255,255,0.7);
+}
+
+.search-form .form-control:focus {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    box-shadow: none;
+}
+
+/* Status Badges */
+.status-pending { background: linear-gradient(45deg, #ffc107, #fd7e14); }
+.status-confirmed { background: linear-gradient(45deg, #17a2b8, #007bff); }
+.status-preparing { background: linear-gradient(45deg, #007bff, #6610f2); }
+.status-ready { background: linear-gradient(45deg, #28a745, #20c997); }
+.status-delivered { background: linear-gradient(45deg, #28a745, #155724); }
+.status-cancelled { background: linear-gradient(45deg, #dc3545, #721c24); }

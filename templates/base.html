@@ -38,7 +38,7 @@
                 </ul>
                 
                 <!-- Search Form -->
-                <form class="d-flex me-3" method="get" action="{% url 'catalog:search' %}">
+                <form class="d-flex me-3 search-form" method="get" action="{% url 'catalog:search' %}">
                     <input class="form-control me-2" type="search" name="q" placeholder="Поиск блюд..." aria-label="Search">
                     <button class="btn btn-outline-light" type="submit">
                         <i class="fas fa-search"></i>
@@ -48,6 +48,13 @@
                 <!-- User Menu -->
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
+                        {% if user.owned_vendors.exists %}
+                        <li class="nav-item">
+                            <a class="nav-link text-warning" href="{% url 'vendors:vendor_dashboard' %}">
+                                <i class="fas fa-store me-1"></i>Мои заведения
+                            </a>
+                        </li>
+                        {% endif %}
                         {% if user.is_staff %}
                         <li class="nav-item">
                             <a class="nav-link text-success" href="{% url 'vendors:add_vendor' %}">
@@ -61,7 +68,7 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{% url 'users:profile' %}">Профиль</a></li>
-                                <li><a class="dropdown-item" href="#orders">Мои заказы</a></li>
+                                <li><a class="dropdown-item" href="{% url 'booking:order_list' %}">Мои заказы</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'users:logout' %}">Выйти</a></li>
                             </ul>

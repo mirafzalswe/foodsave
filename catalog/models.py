@@ -58,15 +58,25 @@ class Offer(models.Model):
     ]
     
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='offers')
-    current_price = models.DecimalField(max_digits=10, decimal_places=2)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='offers')
     original_price = models.DecimalField(max_digits=10, decimal_places=2)
-    vat_percent = models.FloatField(default=0.0)
     discount_percent = models.FloatField(default=0.0)
-    quantity_available = models.PositiveIntegerField()
-    expires_at = models.DateTimeField()
+    quantity = models.PositiveIntegerField(default=0)  # 0 means unlimited
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)  # null means no end date
+    is_active = models.BooleanField(default=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    @property
+    def current_price(self):
+        """Calculate current price with discount"""
+        if self.discount_percent > 0:
+            from decimal import Decimal
+            discount_decimal = Decimal(str(self.discount_percent))
+            return self.original_price * (1 - discount_decimal / 100)
+        return self.original_price
 
     def __str__(self):
         return f"{self.item.title} - {self.discount_percent}% off"
@@ -74,7 +84,9 @@ class Offer(models.Model):
     @property
     def is_expired(self):
         from django.utils import timezone
-        return timezone.now() > self.expires_at
+        if self.end_date:
+            return timezone.now().date() > self.end_date
+        return False
 
 
 

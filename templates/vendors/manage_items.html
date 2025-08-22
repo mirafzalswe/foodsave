@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Управление товарами - {{ vendor.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-boxes me-2"></i>Управление товарами</h2>
+                    <p class="text-muted mb-0">{{ vendor.name }}</p>
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'vendors:add_item' vendor.id %}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Добавить товар
+                    </a>
+                    <a href="{% url 'vendors:vendor_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Назад
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Filter and Search -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Поиск по названию</label>
+                            <input type="text" name="search" class="form-control" 
+                                   value="{{ request.GET.search }}" placeholder="Введите название товара...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Категория</label>
+                            <select name="category" class="form-select">
+                                <option value="">Все категории</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" 
+                                            {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Статус</label>
+                            <select name="status" class="form-select">
+                                <option value="">Все</option>
+                                <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Активные</option>
+                                <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Неактивные</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search me-1"></i>Поиск
+                            </button>
+                            <a href="{% url 'vendors:manage_items' vendor.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Сброс
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if items %}
+                <!-- Items Grid -->
+                <div class="row">
+                    {% for item in items %}
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card item-management-card h-100">
+                                <div class="position-relative">
+                                    {% if item.images.first %}
+                                        <img src="{{ item.images.first.image.url }}" 
+                                             class="card-img-top item-image" alt="{{ item.title }}">
+                                    {% else %}
+                                        <div class="card-img-top item-image-placeholder">
+                                            <i class="fas fa-image fa-3x"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Status Badge -->
+                                    <span class="badge position-absolute top-0 start-0 m-2 
+                                                 bg-{{ item.is_active|yesno:'success,secondary' }}">
+                                        {{ item.is_active|yesno:'Активен,Неактивен' }}
+                                    </span>
+                                    
+                                    <!-- Actions Dropdown -->
+                                    <div class="dropdown position-absolute top-0 end-0 m-2">
+                                        <button class="btn btn-light btn-sm rounded-circle" 
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-edit me-2"></i>Редактировать
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-images me-2"></i>Управление фото
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-{{ item.is_active|yesno:'warning,success' }}" 
+                                                   href="#" onclick="toggleItemStatus({{ item.id }})">
+                                                <i class="fas fa-toggle-{{ item.is_active|yesno:'off,on' }} me-2"></i>
+                                                {{ item.is_active|yesno:'Деактивировать,Активировать' }}
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" 
+                                                   onclick="confirmDelete({{ item.id }}, '{{ item.title }}')">
+                                                <i class="fas fa-trash me-2"></i>Удалить
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ item.title }}</h5>
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-tag me-1"></i>{{ item.category.name }}
+                                    </p>
+                                    <p class="card-text small">{{ item.description|truncatechars:80 }}</p>
+                                    
+                                    <!-- Offers Section -->
+                                    <div class="offers-section mt-3">
+                                        <h6 class="text-primary mb-2">
+                                            <i class="fas fa-percent me-1"></i>Предложения 
+                                            <span class="badge bg-primary">{{ item.offers.count }}</span>
+                                        </h6>
+                                        
+                                        {% if item.offers.all %}
+                                            <div class="offers-list">
+                                                {% for offer in item.offers.all|slice:":2" %}
+                                                    <div class="offer-item d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                                                        <div>
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-{{ offer.is_active|yesno:'success,secondary' }} me-2">
+                                                                    {{ offer.branch.name }}
+                                                                </span>
+                                                                {% if offer.discount_percent > 0 %}
+                                                                    <span class="badge bg-warning text-dark">
+                                                                        -{{ offer.discount_percent }}%
+                                                                    </span>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="price-info mt-1">
+                                                                {% if offer.discount_percent > 0 %}
+                                                                    <span class="text-muted small"><s>{{ offer.original_price }} ₸</s></span>
+                                                                    <span class="text-success fw-bold">{{ offer.current_price }} ₸</span>
+                                                                {% else %}
+                                                                    <span class="fw-bold">{{ offer.original_price }} ₸</span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <button class="btn btn-outline-primary btn-xs" 
+                                                                    onclick="editOffer({{ offer.id }})" title="Редактировать">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <button class="btn btn-outline-danger btn-xs" 
+                                                                    onclick="deleteOffer({{ offer.id }})" title="Удалить">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                                
+                                                {% if item.offers.count > 2 %}
+                                                    <small class="text-muted">
+                                                        и ещё {{ item.offers.count|add:"-2" }} предложений...
+                                                    </small>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <div class="text-center py-2">
+                                                <i class="fas fa-percent fa-2x text-muted mb-2"></i>
+                                                <p class="text-muted small mb-2">Нет предложений</p>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="mt-2">
+                                            <a href="{% url 'vendors:add_offer' item.id %}" 
+                                               class="btn btn-outline-success btn-sm w-100">
+                                                <i class="fas fa-plus me-1"></i>Добавить предложение
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-footer bg-transparent">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <small class="text-muted">Фото</small>
+                                            <div class="fw-bold">{{ item.images.count }}</div>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted">Предложений</small>
+                                            <div class="fw-bold">{{ item.offers.count }}</div>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted">Заказов</small>
+                                            <div class="fw-bold">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                    <nav aria-label="Навигация по страницам">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Первая</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Предыдущая</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Следующая</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Последняя</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-box fa-4x text-muted mb-4"></i>
+                    <h4>Товары не найдены</h4>
+                    {% if request.GET.search or request.GET.category or request.GET.status %}
+                        <p class="text-muted mb-4">Попробуйте изменить параметры поиска</p>
+                        <a href="{% url 'vendors:manage_items' vendor.id %}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-times me-2"></i>Сбросить фильтры
+                        </a>
+                    {% else %}
+                        <p class="text-muted mb-4">У вас пока нет товаров</p>
+                    {% endif %}
+                    <a href="{% url 'vendors:add_item' vendor.id %}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Добавить первый товар
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить товар <strong id="delete-item-name"></strong>?</p>
+                <p class="text-muted small">Это действие нельзя отменить. Все связанные предложения также будут удалены.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.item-management-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.item-management-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.item-image {
+    height: 200px;
+    object-fit: cover;
+    border-radius: 15px 15px 0 0;
+}
+
+.item-image-placeholder {
+    height: 200px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    border-radius: 15px 15px 0 0;
+}
+
+.offers-section {
+    border-top: 1px solid #e9ecef;
+    padding-top: 1rem;
+}
+
+.offer-item {
+    border: 1px solid #e9ecef;
+    transition: background-color 0.3s ease;
+}
+
+.offer-item:hover {
+    background-color: #f8f9fa !important;
+}
+
+.btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.375rem;
+}
+
+.price-info {
+    font-size: 0.9rem;
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+.card-footer {
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.badge {
+    font-size: 0.7rem;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleItemStatus(itemId) {
+    if (confirm('Изменить статус товара?')) {
+        // Here you would make an AJAX call to toggle the status
+        // For now, we'll just reload the page
+        alert('Функция будет добавлена в следующем обновлении');
+    }
+}
+
+function confirmDelete(itemId, itemName) {
+    document.getElementById('delete-item-name').textContent = itemName;
+    document.getElementById('confirm-delete').onclick = function() {
+        deleteItem(itemId);
+    };
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+function deleteItem(itemId) {
+    // Here you would make an AJAX call to delete the item
+    // For now, we'll just show a message
+    alert('Функция удаления будет добавлена в следующем обновлении');
+    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+}
+
+function editOffer(offerId) {
+    // Redirect to edit offer page
+    alert('Функция редактирования предложения будет добавлена в следующем обновлении');
+}
+
+function deleteOffer(offerId) {
+    if (confirm('Удалить это предложение?')) {
+        // Here you would make an AJAX call to delete the offer
+        alert('Функция удаления предложения будет добавлена в следующем обновлении');
+    }
+}
+
+// Auto-submit search form on category/status change
+document.querySelector('select[name="category"]').addEventListener('change', function() {
+    this.form.submit();
+});
+
+document.querySelector('select[name="status"]').addEventListener('change', function() {
+    this.form.submit();
+});
+
+// Clear search on Escape key
+document.querySelector('input[name="search"]').addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        this.value = '';
+        this.form.submit();
+    }
+});
+</script>
+{% endblock %}

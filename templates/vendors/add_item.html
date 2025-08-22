@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Добавить товар - {{ vendor.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient text-white text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-box me-2"></i>
+                        Добавить новый товар
+                    </h3>
+                    <p class="mb-0 opacity-75">{{ vendor.name }}{% if branch %} - {{ branch.name }}{% endif %}</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>Основная информация
+                                </h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-tag me-2 text-primary"></i>Название товара *
+                                </label>
+                                {{ form.title }}
+                                <div class="form-text">Привлекательное название для покупателей</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.category.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-list me-2 text-success"></i>Категория *
+                                </label>
+                                {{ form.category }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-align-left me-2 text-info"></i>Описание
+                                </label>
+                                {{ form.description }}
+                                <div class="form-text">Подробное описание товара, состав, особенности</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.unit.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-weight me-2 text-warning"></i>Единица измерения
+                                </label>
+                                {{ form.unit }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <label for="{{ form.tags.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-tags me-2 text-secondary"></i>Теги
+                                </label>
+                                {{ form.tags }}
+                                <div class="form-text">Например: халяль, вегетарианское, острое, без глютена</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch mt-4">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label fw-bold" for="{{ form.is_active.id_for_label }}">
+                                        <i class="fas fa-toggle-on me-2 text-success"></i>Товар активен
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Images Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-images me-2"></i>Фотографии товара
+                                </h5>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>Совет:</strong> Добавьте качественные фотографии товара. Первая фотография будет использована как основная.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="image-upload-section">
+                            {{ image_formset.management_form }}
+                            <div id="image-forms">
+                                {% for form in image_formset %}
+                                    <div class="image-form-row mb-3 p-3 border rounded">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">
+                                                    <i class="fas fa-image me-2"></i>Изображение {{ forloop.counter }}
+                                                </label>
+                                                {{ form.image }}
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.is_primary }}
+                                                    <label class="form-check-label" for="{{ form.is_primary.id_for_label }}">
+                                                        Основное фото
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="form-label">Порядок</label>
+                                                {{ form.order }}
+                                            </div>
+                                            <div class="col-md-1">
+                                                {% if not forloop.first %}
+                                                    <button type="button" class="btn btn-outline-danger btn-sm remove-image" title="Удалить">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                {% endif %}
+                                                {{ form.DELETE }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-outline-primary" id="add-image">
+                                <i class="fas fa-plus me-2"></i>Добавить ещё фото
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="row mt-5">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                                    <a href="{% url 'vendors:vendor_dashboard' %}" class="btn btn-outline-secondary btn-lg">
+                                        <i class="fas fa-arrow-left me-2"></i>Назад
+                                    </a>
+                                    <div>
+                                        <button type="submit" name="save_and_add_offer" class="btn btn-success btn-lg me-2">
+                                            <i class="fas fa-save me-2"></i>Сохранить и добавить предложение
+                                        </button>
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-save me-2"></i>Сохранить товар
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Help Card -->
+            <div class="card mt-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Советы по добавлению товаров</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-camera me-2 text-primary"></i>Фотографии</h6>
+                            <ul class="small">
+                                <li>Используйте качественные, яркие фотографии</li>
+                                <li>Показывайте товар с разных ракурсов</li>
+                                <li>Первое фото - самое привлекательное</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-edit me-2 text-success"></i>Описание</h6>
+                            <ul class="small">
+                                <li>Укажите состав и ингредиенты</li>
+                                <li>Опишите вкус и особенности</li>
+                                <li>Добавьте информацию о пищевой ценности</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.form-label {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select, textarea {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus, textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.image-form-row {
+    background: #f8f9fa;
+    border-radius: 10px !important;
+}
+
+.image-form-row:hover {
+    background: #e9ecef;
+}
+
+.btn-lg {
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+}
+
+.card {
+    border-radius: 15px;
+}
+
+.form-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.remove-image {
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    padding: 0;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Dynamic formset management
+let imageFormCount = {{ image_formset.total_form_count }};
+const maxForms = {{ image_formset.max_num }};
+
+document.getElementById('add-image').addEventListener('click', function() {
+    if (imageFormCount < maxForms) {
+        const formContainer = document.getElementById('image-forms');
+        const emptyForm = document.querySelector('#image-forms .image-form-row:last-child').cloneNode(true);
+        
+        // Update form indices
+        const formRegex = new RegExp('form-(\\d+)', 'g');
+        emptyForm.innerHTML = emptyForm.innerHTML.replace(formRegex, `form-${imageFormCount}`);
+        
+        // Clear values
+        emptyForm.querySelectorAll('input').forEach(input => {
+            if (input.type !== 'hidden' && input.type !== 'checkbox') {
+                input.value = '';
+            }
+            if (input.type === 'checkbox') {
+                input.checked = false;
+            }
+        });
+        
+        // Add remove button
+        const removeBtn = emptyForm.querySelector('.remove-image');
+        if (removeBtn) {
+            removeBtn.style.display = 'block';
+        }
+        
+        formContainer.appendChild(emptyForm);
+        imageFormCount++;
+        
+        // Update management form
+        document.querySelector('#id_form-TOTAL_FORMS').value = imageFormCount;
+    }
+});
+
+// Remove image form
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-image') || e.target.closest('.remove-image')) {
+        e.preventDefault();
+        const formRow = e.target.closest('.image-form-row');
+        const deleteInput = formRow.querySelector('input[name$="-DELETE"]');
+        
+        if (deleteInput) {
+            deleteInput.checked = true;
+            formRow.style.display = 'none';
+        } else {
+            formRow.remove();
+            imageFormCount--;
+            document.querySelector('#id_form-TOTAL_FORMS').value = imageFormCount;
+        }
+    }
+});
+
+// Preview images
+document.addEventListener('change', function(e) {
+    if (e.target.type === 'file' && e.target.accept && e.target.accept.includes('image')) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let preview = e.target.closest('.image-form-row').querySelector('.image-preview');
+                if (!preview) {
+                    preview = document.createElement('img');
+                    preview.className = 'image-preview mt-2';
+                    preview.style.cssText = 'max-width: 150px; max-height: 150px; border-radius: 8px; object-fit: cover;';
+                    e.target.parentNode.appendChild(preview);
+                }
+                preview.src = e.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+});
+
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Auto-suggest tags
+const commonTags = ['халяль', 'вегетарианское', 'веганское', 'острое', 'сладкое', 'без глютена', 'диетическое', 'домашнее', 'свежее', 'горячее', 'холодное'];
+const tagsInput = document.getElementById('id_tags');
+
+if (tagsInput) {
+    tagsInput.addEventListener('input', function() {
+        // Simple auto-complete could be implemented here
+    });
+}
+</script>
+{% endblock %}

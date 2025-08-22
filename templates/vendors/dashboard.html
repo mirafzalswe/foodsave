@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Панель управления - FoodSave{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-store me-2"></i>Панель управления</h2>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-plus me-2"></i>Добавить
+                    </button>
+                    <ul class="dropdown-menu">
+                        {% if vendors %}
+                            {% for vendor in vendors %}
+                                <li><h6 class="dropdown-header">{{ vendor.name }}</h6></li>
+                                <li><a class="dropdown-item" href="{% url 'vendors:add_branch' vendor.id %}">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Новый филиал
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'vendors:add_item' vendor.id %}">
+                                    <i class="fas fa-box me-2"></i>Новый товар
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                            {% endfor %}
+                        {% endif %}
+                        <li><a class="dropdown-item text-muted" href="#" onclick="alert('Обратитесь к администратору для создания нового заведения')">
+                            <i class="fas fa-store me-2"></i>Новое заведение
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            {% if vendors %}
+                {% for vendor in vendors %}
+                    <div class="card mb-4 vendor-card">
+                        <div class="card-header bg-gradient-primary text-white">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center">
+                                        {% if vendor.logo %}
+                                            <img src="{{ vendor.logo.url }}" class="vendor-logo me-3" alt="{{ vendor.name }}">
+                                        {% else %}
+                                            <div class="vendor-logo-placeholder me-3">
+                                                <i class="fas fa-store"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h4 class="mb-1">{{ vendor.name }}</h4>
+                                            <p class="mb-0 opacity-75">
+                                                <i class="fas fa-tag me-1"></i>{{ vendor.get_type_display }}
+                                                <span class="mx-2">•</span>
+                                                <i class="fas fa-star me-1"></i>{{ vendor.rating|floatformat:1 }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <div class="btn-group">
+                                        <a href="{% url 'vendors:manage_items' vendor.id %}" class="btn btn-outline-light btn-sm">
+                                            <i class="fas fa-cog me-1"></i>Управление
+                                        </a>
+                                        <a href="{% url 'vendors:vendor_detail' vendor.id %}" class="btn btn-outline-light btn-sm">
+                                            <i class="fas fa-eye me-1"></i>Просмотр
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Statistics -->
+                                <div class="col-md-3 mb-3">
+                                    <div class="stat-card text-center">
+                                        <div class="stat-icon bg-primary">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </div>
+                                        <h5 class="mt-2">{{ vendor.branches.count }}</h5>
+                                        <small class="text-muted">Филиалов</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="stat-card text-center">
+                                        <div class="stat-icon bg-success">
+                                            <i class="fas fa-box"></i>
+                                        </div>
+                                        <h5 class="mt-2">{{ vendor.items.count }}</h5>
+                                        <small class="text-muted">Товаров</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="stat-card text-center">
+                                        <div class="stat-icon bg-warning">
+                                            <i class="fas fa-percent"></i>
+                                        </div>
+                                        <h5 class="mt-2">{{ vendor.items.count }}</h5>
+                                        <small class="text-muted">Предложений</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="stat-card text-center">
+                                        <div class="stat-icon bg-info">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </div>
+                                        <h5 class="mt-2">0</h5>
+                                        <small class="text-muted">Заказов</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Actions -->
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-map-marker-alt me-2"></i>Филиалы</h6>
+                                    {% if vendor.branches.all %}
+                                        <div class="list-group list-group-flush">
+                                            {% for branch in vendor.branches.all|slice:":3" %}
+                                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                    <div>
+                                                        <strong>{{ branch.name }}</strong>
+                                                        <br><small class="text-muted">{{ branch.address|truncatechars:40 }}</small>
+                                                    </div>
+                                                    <span class="badge bg-{{ branch.is_active|yesno:'success,secondary' }}">
+                                                        {{ branch.is_active|yesno:'Активен,Неактивен' }}
+                                                    </span>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="mt-2">
+                                            <a href="{% url 'vendors:add_branch' vendor.id %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-plus me-1"></i>Добавить филиал
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-center py-3">
+                                            <i class="fas fa-map-marker-alt fa-2x text-muted mb-2"></i>
+                                            <p class="text-muted">Нет филиалов</p>
+                                            <a href="{% url 'vendors:add_branch' vendor.id %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-plus me-1"></i>Добавить первый филиал
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-box me-2"></i>Последние товары</h6>
+                                    {% if vendor.items.all %}
+                                        <div class="list-group list-group-flush">
+                                            {% for item in vendor.items.all|slice:":3" %}
+                                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                    <div class="d-flex align-items-center">
+                                                        {% if item.images.first %}
+                                                            <img src="{{ item.images.first.image.url }}" 
+                                                                 class="item-thumb me-2" alt="{{ item.title }}">
+                                                        {% else %}
+                                                            <div class="item-thumb-placeholder me-2">
+                                                                <i class="fas fa-image"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                        <div>
+                                                            <strong>{{ item.title }}</strong>
+                                                            <br><small class="text-muted">{{ item.category.name }}</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        {% if item.offers.first %}
+                                                            <span class="price-tag small">{{ item.offers.first.current_price }} ₸</span>
+                                                        {% else %}
+                                                            <a href="{% url 'vendors:add_offer' item.id %}" class="btn btn-outline-success btn-xs">
+                                                                <i class="fas fa-plus"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="mt-2">
+                                            <a href="{% url 'vendors:add_item' vendor.id %}" class="btn btn-outline-success btn-sm me-2">
+                                                <i class="fas fa-plus me-1"></i>Добавить товар
+                                            </a>
+                                            <a href="{% url 'vendors:manage_items' vendor.id %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-cog me-1"></i>Управление
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-center py-3">
+                                            <i class="fas fa-box fa-2x text-muted mb-2"></i>
+                                            <p class="text-muted">Нет товаров</p>
+                                            {% if vendor.branches.all %}
+                                                <a href="{% url 'vendors:add_item' vendor.id %}" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-plus me-1"></i>Добавить первый товар
+                                                </a>
+                                            {% else %}
+                                                <small class="text-muted">Сначала добавьте филиал</small>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-store fa-4x text-muted mb-4"></i>
+                    <h4>У вас пока нет заведений</h4>
+                    <p class="text-muted mb-4">Обратитесь к администратору для создания вашего первого заведения</p>
+                    <button class="btn btn-primary" onclick="alert('Обратитесь к администратору для создания заведения')">
+                        <i class="fas fa-envelope me-2"></i>Связаться с администратором
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.vendor-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.vendor-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.3);
+}
+
+.vendor-logo-placeholder {
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-card {
+    padding: 1rem;
+    border-radius: 10px;
+    background: #f8f9fa;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.item-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.item-thumb-placeholder {
+    width: 40px;
+    height: 40px;
+    background: #e9ecef;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+.btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}

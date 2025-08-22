@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Заказ {{ order.order_number }} - FoodSave{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Заказ {{ order.order_number }}</h5>
+                        {% if order.status == 'pending' %}
+                            <span class="badge bg-warning">Ожидает</span>
+                        {% elif order.status == 'confirmed' %}
+                            <span class="badge bg-info">Подтвержден</span>
+                        {% elif order.status == 'preparing' %}
+                            <span class="badge bg-primary">Готовится</span>
+                        {% elif order.status == 'ready' %}
+                            <span class="badge bg-success">Готов</span>
+                        {% elif order.status == 'in_transit' %}
+                            <span class="badge bg-info">В пути</span>
+                        {% elif order.status == 'delivered' %}
+                            <span class="badge bg-success">Доставлен</span>
+                        {% elif order.status == 'cancelled' %}
+                            <span class="badge bg-danger">Отменен</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Информация о заказе</h6>
+                            <p><strong>Дата:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
+                            <p><strong>Тип доставки:</strong> 
+                                {% if order.delivery_type == 'delivery' %}
+                                    Доставка
+                                {% else %}
+                                    Самовывоз
+                                {% endif %}
+                            </p>
+                            {% if order.delivery_address %}
+                                <p><strong>Адрес:</strong> {{ order.delivery_address }}</p>
+                            {% endif %}
+                            <p><strong>Способ оплаты:</strong> {{ order.get_payment_method_display }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Статус заказа</h6>
+                            <div class="progress mb-3">
+                                {% if order.status == 'pending' %}
+                                    <div class="progress-bar bg-warning" style="width: 20%"></div>
+                                {% elif order.status == 'confirmed' %}
+                                    <div class="progress-bar bg-info" style="width: 40%"></div>
+                                {% elif order.status == 'preparing' %}
+                                    <div class="progress-bar bg-primary" style="width: 60%"></div>
+                                {% elif order.status == 'ready' %}
+                                    <div class="progress-bar bg-success" style="width: 80%"></div>
+                                {% elif order.status == 'delivered' %}
+                                    <div class="progress-bar bg-success" style="width: 100%"></div>
+                                {% elif order.status == 'cancelled' %}
+                                    <div class="progress-bar bg-danger" style="width: 100%"></div>
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">
+                                {% if order.status == 'pending' %}
+                                    Заказ ожидает подтверждения
+                                {% elif order.status == 'confirmed' %}
+                                    Заказ подтвержден и принят в работу
+                                {% elif order.status == 'preparing' %}
+                                    Заказ готовится
+                                {% elif order.status == 'ready' %}
+                                    Заказ готов к получению
+                                {% elif order.status == 'in_transit' %}
+                                    Заказ в пути
+                                {% elif order.status == 'delivered' %}
+                                    Заказ доставлен
+                                {% elif order.status == 'cancelled' %}
+                                    Заказ отменен
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    {% if order.notes %}
+                        <div class="alert alert-info">
+                            <h6>Комментарий к заказу:</h6>
+                            {{ order.notes }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Order Items -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Состав заказа</h6>
+                </div>
+                <div class="card-body">
+                    {% if order.items.all %}
+                        {% for item in order.items.all %}
+                            <div class="row align-items-center mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                                <div class="col-md-2">
+                                    {% if item.offer.item.images.first %}
+                                        <img src="{{ item.offer.item.images.first.image.url }}" 
+                                             class="img-fluid rounded" alt="{{ item.offer.item.title }}"
+                                             style="height: 60px; width: 60px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="height: 60px; width: 60px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="mb-1">{{ item.offer.item.title }}</h6>
+                                    <small class="text-muted">{{ item.offer.item.vendor.name }}</small>
+                                    {% if item.offer.item.description %}
+                                        <p class="small text-muted mb-0">{{ item.offer.item.description|truncatechars:80 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <span class="badge bg-secondary">{{ item.quantity }} шт.</span>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <strong>{{ item.price }} ₸</strong>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Товары не указаны</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Итого</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Стоимость товаров:</span>
+                        <span>{{ order.total_amount }} ₸</span>
+                    </div>
+                    {% if order.delivery_fee > 0 %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Доставка:</span>
+                            <span>{{ order.delivery_fee }} ₸</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Итого:</strong>
+                            <strong>{{ order.total_amount|add:order.delivery_fee }} ₸</strong>
+                        </div>
+                    {% else %}
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Итого:</strong>
+                            <strong>{{ order.total_amount }} ₸</strong>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    {% if order.status == 'pending' %}
+                        <button class="btn btn-outline-danger w-100 mb-2" onclick="cancelOrder()">
+                            <i class="fas fa-times me-2"></i>Отменить заказ
+                        </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'booking:order_list' %}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-arrow-left me-2"></i>К списку заказов
+                    </a>
+                    
+                    {% if order.status == 'delivered' %}
+                        <button class="btn btn-outline-success w-100 mt-2" onclick="rateOrder()">
+                            <i class="fas fa-star me-2"></i>Оценить заказ
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Support -->
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h6>Нужна помощь?</h6>
+                    <p class="small text-muted">Свяжитесь с нашей службой поддержки</p>
+                    <button class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-phone me-2"></i>Связаться
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cancelOrder() {
+    if (confirm('Вы уверены, что хотите отменить этот заказ?')) {
+        // Here you would implement order cancellation
+        alert('Функция отмены заказа будет реализована позже');
+    }
+}
+
+function rateOrder() {
+    alert('Функция оценки заказа будет реализована позже');
+}
+</script>
+{% endblock %}

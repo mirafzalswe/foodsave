@@ -13,8 +13,8 @@ class ItemImageInline(admin.TabularInline):
 class OfferInline(admin.TabularInline):
     model = Offer
     extra = 0
-    fields = ('current_price', 'original_price', 'discount_percent', 'quantity_available', 'expires_at', 'status')
-    readonly_fields = ('discount_percent',)
+    fields = ('branch', 'original_price', 'discount_percent', 'quantity', 'start_date', 'end_date', 'is_active', 'status')
+    readonly_fields = ('current_price',)
 
 
 @admin.register(Category)
@@ -104,20 +104,20 @@ class ItemImageAdmin(admin.ModelAdmin):
 
 @admin.register(Offer)
 class OfferAdmin(admin.ModelAdmin):
-    list_display = ('item', 'current_price', 'original_price', 'discount_percent', 'quantity_available', 'status', 'expires_at', 'is_expired_display')
-    list_filter = ('status', 'item__vendor', 'item__category', 'expires_at')
-    search_fields = ('item__title', 'item__vendor__name')
+    list_display = ('item', 'branch', 'current_price_display', 'original_price', 'discount_percent', 'quantity', 'status', 'end_date', 'is_expired_display')
+    list_filter = ('status', 'is_active', 'item__vendor', 'item__category', 'branch', 'end_date')
+    search_fields = ('item__title', 'item__vendor__name', 'branch__name')
     ordering = ('-created_at',)
     
     fieldsets = (
-        ('Item Information', {
-            'fields': ('item',)
+        ('Item & Branch', {
+            'fields': ('item', 'branch')
         }),
         ('Pricing', {
-            'fields': ('current_price', 'original_price', 'vat_percent', 'discount_percent')
+            'fields': ('original_price', 'discount_percent')
         }),
         ('Availability', {
-            'fields': ('quantity_available', 'expires_at', 'status')
+            'fields': ('quantity', 'start_date', 'end_date', 'is_active', 'status')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -125,7 +125,11 @@ class OfferAdmin(admin.ModelAdmin):
         }),
     )
     
-    readonly_fields = ('created_at', 'updated_at', 'discount_percent')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    def current_price_display(self, obj):
+        return f"{obj.current_price:.2f} ₸"
+    current_price_display.short_description = "Current Price"
     
     def is_expired_display(self, obj):
         if obj.is_expired:
@@ -133,13 +137,7 @@ class OfferAdmin(admin.ModelAdmin):
         return format_html('<span style="color: green;">No</span>')
     is_expired_display.short_description = "Expired"
     
-    def save_model(self, request, obj, form, change):
-        # Calculate discount percentage
-        if obj.original_price and obj.current_price:
-            obj.discount_percent = round(((obj.original_price - obj.current_price) / obj.original_price) * 100, 2)
-        super().save_model(request, obj, form, change)
-    
-    actions = ['mark_as_expired', 'mark_as_available', 'mark_as_sold_out']
+    actions = ['mark_as_expired', 'mark_as_available', 'mark_as_sold_out', 'activate_offers', 'deactivate_offers']
     
     def mark_as_expired(self, request, queryset):
         updated = queryset.update(status='expired')
@@ -147,7 +145,7 @@ class OfferAdmin(admin.ModelAdmin):
     mark_as_expired.short_description = "Mark selected offers as expired"
     
     def mark_as_available(self, request, queryset):
-        updated = queryset.filter(expires_at__gt=timezone.now()).update(status='available')
+        updated = queryset.update(status='available')
         self.message_user(request, f'{updated} offers were marked as available.')
     mark_as_available.short_description = "Mark selected offers as available"
     
@@ -155,3 +153,13 @@ class OfferAdmin(admin.ModelAdmin):
         updated = queryset.update(status='sold_out')
         self.message_user(request, f'{updated} offers were marked as sold out.')
     mark_as_sold_out.short_description = "Mark selected offers as sold out"
+    
+    def activate_offers(self, request, queryset):
+        updated = queryset.update(is_active=True)
+        self.message_user(request, f'{updated} offers were activated.')
+    activate_offers.short_description = "Activate selected offers"
+    
+    def deactivate_offers(self, request, queryset):
+        updated = queryset.update(is_active=False)
+        self.message_user(request, f'{updated} offers were deactivated.')
+    deactivate_offers.short_description = "Deactivate selected offers"

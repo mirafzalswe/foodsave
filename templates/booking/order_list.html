@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои заказы - FoodSave{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-shopping-bag me-2"></i>Мои заказы
+            </h2>
+            
+            {% if orders %}
+                <div class="row">
+                    {% for order in orders %}
+                        <div class="col-12 mb-4">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">Заказ {{ order.order_number }}</h6>
+                                        <small class="text-muted">{{ order.created_at|date:"d.m.Y H:i" }}</small>
+                                    </div>
+                                    <div>
+                                        {% if order.status == 'pending' %}
+                                            <span class="badge bg-warning">Ожидает</span>
+                                        {% elif order.status == 'confirmed' %}
+                                            <span class="badge bg-info">Подтвержден</span>
+                                        {% elif order.status == 'preparing' %}
+                                            <span class="badge bg-primary">Готовится</span>
+                                        {% elif order.status == 'ready' %}
+                                            <span class="badge bg-success">Готов</span>
+                                        {% elif order.status == 'in_transit' %}
+                                            <span class="badge bg-info">В пути</span>
+                                        {% elif order.status == 'delivered' %}
+                                            <span class="badge bg-success">Доставлен</span>
+                                        {% elif order.status == 'cancelled' %}
+                                            <span class="badge bg-danger">Отменен</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h6>Детали заказа:</h6>
+                                            {% if order.items.all %}
+                                                <ul class="list-unstyled mb-2">
+                                                    {% for item in order.items.all %}
+                                                        <li class="d-flex justify-content-between">
+                                                            <span>{{ item.offer.item.title }} x{{ item.quantity }}</span>
+                                                            <span>{{ item.price }} ₸</span>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <p class="text-muted">Товары не указаны</p>
+                                            {% endif %}
+                                            
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-truck me-1"></i>
+                                                    {% if order.delivery_type == 'delivery' %}
+                                                        Доставка
+                                                        {% if order.delivery_address %}
+                                                            - {{ order.delivery_address|truncatechars:50 }}
+                                                        {% endif %}
+                                                    {% else %}
+                                                        Самовывоз
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                            
+                                            {% if order.notes %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-comment me-1"></i>{{ order.notes|truncatechars:100 }}
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4 text-md-end">
+                                            <div class="mb-2">
+                                                <h5 class="text-primary">{{ order.total_amount }} ₸</h5>
+                                                {% if order.delivery_fee > 0 %}
+                                                    <small class="text-muted">+ {{ order.delivery_fee }} ₸ доставка</small>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <a href="{% url 'booking:order_detail' order.pk %}" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    Подробнее
+                                                </a>
+                                                {% if order.status == 'pending' %}
+                                                    <button class="btn btn-outline-danger btn-sm ms-2" 
+                                                            onclick="cancelOrder({{ order.pk }})">
+                                                        Отменить
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                    <nav aria-label="Orders pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1">Первая</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                    <h4>У вас пока нет заказов</h4>
+                    <p class="text-muted">Начните покупки в нашем каталоге</p>
+                    <a href="{% url 'catalog:catalog' %}" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart me-2"></i>Перейти к покупкам
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function cancelOrder(orderId) {
+    if (confirm('Вы уверены, что хотите отменить этот заказ?')) {
+        // Here you would implement order cancellation
+        alert('Функция отмены заказа будет реализована позже');
+    }
+}
+</script>
+{% endblock %}

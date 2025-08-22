@@ -1,11 +1,46 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit, Div
+from crispy_forms.layout import Layout, Row, Column, Submit, Div, HTML
 from crispy_forms.bootstrap import FormActions
 from .models import Vendor, Branch
 
 User = get_user_model()
+
+
+class OwnerForm(forms.ModelForm):
+    """Form for creating new owners/users"""
+    password = forms.CharField(widget=forms.PasswordInput(), label="Пароль")
+    password_confirm = forms.CharField(widget=forms.PasswordInput(), label="Подтвердите пароль")
+    
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'role']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['role'].choices = [('vendor', 'Vendor Owner'), ('customer', 'Customer')]
+        self.fields['role'].initial = 'vendor'
+        
+        # Add styling
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+            
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        password_confirm = cleaned_data.get('password_confirm')
+        
+        if password and password_confirm and password != password_confirm:
+            raise forms.ValidationError('Пароли не совпадают')
+        return cleaned_data
+        
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+        return user
 
 
 class VendorForm(forms.ModelForm):
@@ -25,10 +60,22 @@ class VendorForm(forms.ModelForm):
         self.helper.form_enctype = 'multipart/form-data'
         self.helper.layout = Layout(
             Row(
-                Column('owner', css_class='form-group col-md-6 mb-3'),
-                Column('type', css_class='form-group col-md-6 mb-3'),
+                Column('owner', css_class='form-group col-md-8 mb-3'),
+                Column(
+                    HTML('''
+                        <div class="form-group">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" class="btn btn-outline-success btn-sm w-100" 
+                                    data-bs-toggle="modal" data-bs-target="#addOwnerModal">
+                                <i class="fas fa-user-plus me-1"></i>Добавить владельца
+                            </button>
+                        </div>
+                    '''),
+                    css_class='col-md-4 mb-3'
+                ),
                 css_class='form-row'
             ),
+            'type',
             'name',
             'description',
             'logo',
@@ -62,7 +109,7 @@ class BranchForm(forms.ModelForm):
     
     class Meta:
         model = Branch
-        fields = ['vendor', 'name', 'address', 'latitude', 'longitude', 'phone', 'is_active']
+        fields = ['name', 'address', 'latitude', 'longitude', 'phone', 'is_active']
         widgets = {
             'address': forms.Textarea(attrs={'rows': 3}),
         }
@@ -72,7 +119,6 @@ class BranchForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            'vendor',
             'name',
             'address',
             Row(
@@ -89,26 +135,30 @@ class BranchForm(forms.ModelForm):
         )
         
         # Add custom styling
-        self.fields['vendor'].widget.attrs.update({'class': 'form-select'})
         self.fields['name'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': 'Название филиала...'
+            'placeholder': 'Название филиала...',
+            'required': True
         })
         self.fields['address'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': 'Адрес филиала...'
+            'placeholder': 'Адрес филиала...',
+            'required': True
         })
         self.fields['latitude'].widget.attrs.update({
             'class': 'form-control',
             'placeholder': 'Широта',
-            'step': 'any'
+            'step': 'any',
+            'required': True
         })
         self.fields['longitude'].widget.attrs.update({
             'class': 'form-control',
             'placeholder': 'Долгота',
-            'step': 'any'
+            'step': 'any',
+            'required': True
         })
         self.fields['phone'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': '+7 (xxx) xxx-xx-xx'
+            'placeholder': '+7 (xxx) xxx-xx-xx',
+            'required': True
         })
