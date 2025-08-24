@@ -4,6 +4,7 @@
 {% block title %}Корзина - FoodSave{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/premium-quick-sets.css' %}">
 <style>
 /* ===== FRIENDLY SMART CART DESIGN SYSTEM ===== */
 :root {
@@ -2820,6 +2821,9 @@ body {
         display: none;
     }
 }
+
+/* ===== ПРЕМИУМ БЫСТРЫЕ НАБОРЫ 2.0 ===== */
+/* Все стили перенесены в отдельный файл static/css/premium-quick-sets.css */
 </style>
 {% endblock %}
 
@@ -2960,7 +2964,7 @@ body {
         <div class="col-lg-4">
             <!-- Умная сводка заказа -->
             <div class="smart-summary">
-                <!-- Функциональные кнопки -->
+                <!-- Премиум функциональные кнопки -->
                 <div class="summary-actions">
                     <button class="action-btn quick-sets-btn" id="quickSetsBtn" title="Быстрые наборы товаров">
                         <i class="fas fa-boxes"></i>
@@ -3499,17 +3503,24 @@ class FriendlySmartCart {
         this.setupModalHandlers();
     }
     
-    // ===== БЫСТРЫЕ НАБОРЫ =====
+    // ===== ПРЕМИУМ БЫСТРЫЕ НАБОРЫ 2.0 =====
     async showQuickSets() {
         try {
             const modal = document.getElementById('quickSetsModal');
             const container = document.getElementById('quickSetsContainer');
             
-            // Показываем модальное окно
+            // Показываем модальное окно с анимацией
             modal.style.display = 'block';
+            modal.style.opacity = '0';
+            setTimeout(() => modal.style.opacity = '1', 10);
             
-            // Показываем загрузку
-            container.innerHTML = '<div class="loading">Загрузка наборов...</div>';
+            // Показываем премиум загрузку
+            container.innerHTML = `
+                <div class="loading">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🚀</div>
+                    <div>Загружаем премиум наборы...</div>
+                </div>
+            `;
             
             // Загружаем наборы из API
             const response = await fetch('/catalog/api/quick-sets/', {
@@ -3531,13 +3542,25 @@ class FriendlySmartCart {
                 this.currentQuickSets = data.quick_sets;
                 this.renderQuickSets(data.quick_sets);
             } else {
-                container.innerHTML = '<div class="empty-state">Нет доступных наборов</div>';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📦</div>
+                        <h3 style="margin-bottom: 0.5rem;">Нет доступных наборов</h3>
+                        <p>Создайте свой первый набор товаров</p>
+                    </div>
+                `;
             }
             
         } catch (error) {
             console.error('Ошибка загрузки быстрых наборов:', error);
             const container = document.getElementById('quickSetsContainer');
-            container.innerHTML = '<div class="error-state">Ошибка загрузки наборов</div>';
+            container.innerHTML = `
+                <div class="error-state">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+                    <h3>Ошибка загрузки</h3>
+                    <p>Попробуйте обновить страницу</p>
+                </div>
+            `;
         }
     }
     
@@ -3545,117 +3568,285 @@ class FriendlySmartCart {
         const container = document.getElementById('quickSetsContainer');
         const template = document.getElementById('quickSetTemplate');
         
-        console.log('🔍 Rendering quick sets:', quickSets);
+        if (!container) {
+            console.error('❌ Container quickSetsContainer not found');
+            return;
+        }
+        
+        if (!template) {
+            console.error('❌ Template quickSetTemplate not found');
+            container.innerHTML = '<div class="error-state">Ошибка: шаблон не найден</div>';
+            return;
+        }
+        
+        console.log('🚀 Rendering premium quick sets:', quickSets);
         
         container.innerHTML = '';
         
         quickSets.forEach((quickSet, setIndex) => {
             const quickSetElement = template.content.cloneNode(true);
             
-            // Заполняем заголовок
-            quickSetElement.querySelector('.quick-set-title').textContent = quickSet.name;
-            quickSetElement.querySelector('.quick-set-description').textContent = quickSet.description;
+            // Заполняем заголовок с премиум стилем
+            const titleElement = quickSetElement.querySelector('.quick-set-title');
+            const descriptionElement = quickSetElement.querySelector('.quick-set-description');
             
-            // Добавляем товары
+            if (titleElement) {
+                titleElement.textContent = quickSet.name || 'Без названия';
+                titleElement.style.background = 'linear-gradient(135deg, var(--primary) 0%, var(--success) 100%)';
+                titleElement.style.webkitBackgroundClip = 'text';
+                titleElement.style.webkitTextFillColor = 'transparent';
+                titleElement.style.backgroundClip = 'text';
+            }
+            
+            if (descriptionElement) {
+                descriptionElement.textContent = quickSet.description || 'Описание отсутствует';
+            }
+            
+            // Добавляем товары с анимацией
             const itemsContainer = quickSetElement.querySelector('.quick-set-items');
-            console.log(`📦 Adding ${quickSet.items.length} items to set "${quickSet.name}"`);
+            console.log(`📦 Adding ${quickSet.items.length} premium items to set "${quickSet.name}"`);
             
-            quickSet.items.forEach((item, itemIndex) => {
-                console.log(`  - Item ${itemIndex}: ${item.title} (${item.image_url})`);
-                const itemElement = this.createQuickSetItemElement(item, setIndex, itemIndex);
-                itemsContainer.appendChild(itemElement);
-            });
+            if (itemsContainer && quickSet.items) {
+                quickSet.items.forEach((item, itemIndex) => {
+                    console.log(`  - Premium Item ${itemIndex}: ${item.title} (${item.image_url})`);
+                    const itemElement = this.createQuickSetItemElement(item, setIndex, itemIndex);
+                    
+                    if (itemElement && itemElement.style) {
+                        // Добавляем анимацию появления
+                        itemElement.style.opacity = '0';
+                        itemElement.style.transform = 'translateY(20px)';
+                        itemsContainer.appendChild(itemElement);
+                        
+                        setTimeout(() => {
+                            if (itemElement && itemElement.style) {
+                                itemElement.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                                itemElement.style.opacity = '1';
+                                itemElement.style.transform = 'translateY(0)';
+                            }
+                        }, itemIndex * 100);
+                    } else if (itemElement) {
+                        // Если элемент есть, но нет style, добавляем без анимации
+                        itemsContainer.appendChild(itemElement);
+                    }
+                });
+            }
             
-            // Добавляем обработчики для кнопок
+            // Добавляем обработчики для кнопок с премиум эффектами
             const addSetBtn = quickSetElement.querySelector('.add-set-btn');
             const customizeSetBtn = quickSetElement.querySelector('.customize-set-btn');
             const editSetBtn = quickSetElement.querySelector('.edit-set-btn');
             
-            addSetBtn.addEventListener('click', () => this.addQuickSetToCart(quickSet));
-            customizeSetBtn.addEventListener('click', () => this.customizeQuickSet(quickSet, setIndex));
-            editSetBtn.addEventListener('click', () => this.editQuickSet(quickSet, setIndex));
+            if (addSetBtn) {
+                addSetBtn.addEventListener('click', () => {
+                    if (addSetBtn.style) {
+                        addSetBtn.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            if (addSetBtn.style) {
+                                addSetBtn.style.transform = '';
+                            }
+                            this.addQuickSetToCart(quickSet);
+                        }, 150);
+                    } else {
+                        this.addQuickSetToCart(quickSet);
+                    }
+                });
+            }
             
-            container.appendChild(quickSetElement);
+            if (customizeSetBtn) {
+                customizeSetBtn.addEventListener('click', () => {
+                    if (customizeSetBtn.style) {
+                        customizeSetBtn.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            if (customizeSetBtn.style) {
+                                customizeSetBtn.style.transform = '';
+                            }
+                            this.customizeQuickSet(quickSet, setIndex);
+                        }, 150);
+                    } else {
+                        this.customizeQuickSet(quickSet, setIndex);
+                    }
+                });
+            }
+            
+            if (editSetBtn) {
+                editSetBtn.addEventListener('click', () => {
+                    if (editSetBtn.style) {
+                        editSetBtn.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            if (editSetBtn.style) {
+                                editSetBtn.style.transform = '';
+                            }
+                            this.editQuickSet(quickSet, setIndex);
+                        }, 150);
+                    } else {
+                        this.editQuickSet(quickSet, setIndex);
+                    }
+                });
+            }
+            
+            // Добавляем анимацию появления карточки
+            const quickSetCard = quickSetElement.querySelector('.quick-set');
+            if (quickSetCard) {
+                quickSetCard.style.opacity = '0';
+                quickSetCard.style.transform = 'translateY(30px) scale(0.95)';
+                container.appendChild(quickSetElement);
+                
+                setTimeout(() => {
+                    if (quickSetCard && quickSetCard.style) {
+                        quickSetCard.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                        quickSetCard.style.opacity = '1';
+                        quickSetCard.style.transform = 'translateY(0) scale(1)';
+                    }
+                }, setIndex * 200);
+            } else {
+                container.appendChild(quickSetElement);
+            }
         });
     }
     
     createQuickSetItemElement(item, setIndex, itemIndex) {
         const template = document.getElementById('quickSetItemTemplate');
+        if (!template) {
+            console.error('❌ Template quickSetItemTemplate not found');
+            return null;
+        }
+        
         const itemElement = template.content.cloneNode(true);
         
-        console.log(`🎨 Creating element for item: ${item.title}`);
+        // Отладочная информация о данных товара
+        console.log(`🎨 Creating premium element for item:`, item);
+        console.log(`📦 Item data:`, {
+            title: item.title,
+            vendor: item.vendor || item.vendor_name,
+            image_url: item.image_url,
+            current_price: item.current_price || item.price,
+            original_price: item.original_price,
+            quantity: item.quantity
+        });
         
         const imageElement = itemElement.querySelector('.quick-set-item-image');
-        // Используем placeholder если нет изображения
-        imageElement.src = item.image_url || '/static/images/placeholder.jpg';
-        imageElement.alt = item.title;
-        
-        console.log(`🖼️ Image src: ${imageElement.src}`);
-        
-        // Добавляем обработчик ошибки для изображения
-        imageElement.onerror = function() {
-            console.log(`❌ Image failed to load: ${this.src}`);
-            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMDAgODBDMTA4LjgzNyA4MCAxMTYgODcuMTYzNCAxMTYgOTZDMTE2IDEwNC44MzcgMTA4LjgzNyAxMTIgMTAwIDExMkM5MS4xNjM0IDExMiA4NCAxMDQuODM3IDg0IDk2Qzg0IDg3LjE2MzQgOTEuMTYzNCA4MCAxMDAgODBaIiBmaWxsPSIjOUI5QkEwIi8+CjxwYXRoIGQ9Ik0xMDAgMTI4QzExMi4yMDkgMTI4IDEyMiAxMTguMjA5IDEyMiAxMDZIMTgwQzE4MCAxMTguMjA5IDE3MC4yMDkgMTI4IDE1OCAxMjhIMTAwWiIgZmlsbD0iIzlCOUJBQCIvPgo8L3N2Zz4K';
-        };
+        if (imageElement) {
+            // Определяем URL изображения
+            const imageUrl = item.image_url || item.image || item.photo || item.thumbnail;
+            const itemTitle = item.title || item.name || item.product_name || 'Товар';
+            
+            if (imageUrl) {
+                imageElement.src = imageUrl;
+                console.log(`🖼️ Set image URL: ${imageUrl}`);
+            } else {
+                // Красивый placeholder с иконкой товара
+                imageElement.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmZmY7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I2YzZjRmNjtzdG9wLW9wYWNpdHk6MSIgLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8cGF0aCBkPSJNNjAgNDhDNjYuNjI3IDQ4IDcyIDUzLjM3MyA3MiA2MEM3MiA2Ni42MjcgNjYuNjI3IDcyIDYwIDcyQzUzLjM3MyA3MiA0OCA2Ni42MjcgNDggNjBDNDggNTMuMzczIDUzLjM3MyA0OCA2MCA0OFoiIGZpbGw9IiM5QjlCQTAiLz4KPHBhdGggZD0iTTYwIDc2QzY3LjMyNiA3NiA3MyA3MC4zMjYgNzMgNjNINzJDNzIgNzAuMzI2IDY2LjMyNiA3NiA1OSA3Nkg2MFoiIGZpbGw9IiM5QjlCQTAiLz4KPC9zdmc+';
+                console.log(`🖼️ Using placeholder image for: ${itemTitle}`);
+            }
+            
+            imageElement.alt = itemTitle;
+            
+            // Добавляем обработчик ошибки для изображения
+            imageElement.onerror = function() {
+                console.log(`❌ Image failed to load: ${this.src}`);
+                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmZmY7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I2YzZjRmNjtzdG9wLW9wYWNpdHk6MSIgLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8cGF0aCBkPSJNNjAgNDhDNjYuNjI3IDQ4IDcyIDUzLjM3MyA3MiA2MEM3MiA2Ni42MjcgNjYuNjI3IDcyIDYwIDcyQzUzLjM3MyA3MiA0OCA2Ni42MjcgNDggNjBDNDggNTMuMzczIDUzLjM3MyA0OCA2MCA0OFoiIGZpbGw9IiM5QjlCQTAiLz4KPHBhdGggZD0iTTYwIDc2QzY3LjMyNiA3NiA3MyA3MC4zMjYgNzMgNjNINzJDNzIgNzAuMzI2IDY2LjMyNiA3NiA1OSA3Nkg2MFoiIGZpbGw9IiM5QjlCQTAiLz4KPC9zdmc+';
+            };
+        }
         
         const titleElement = itemElement.querySelector('.quick-set-item-title');
         const vendorElement = itemElement.querySelector('.quick-set-item-vendor');
         const currentPriceElement = itemElement.querySelector('.current-price');
         const originalPriceElement = itemElement.querySelector('.original-price');
         
-        titleElement.textContent = item.title;
-        vendorElement.textContent = item.vendor_name;
-        currentPriceElement.textContent = `${item.current_price.toLocaleString()} сум`;
-        originalPriceElement.textContent = `${item.original_price.toLocaleString()} сум`;
+        // Заполняем название товара
+        if (titleElement) {
+            const title = item.title || item.name || item.product_name || 'Товар без названия';
+            titleElement.textContent = title;
+            console.log(`✅ Set title: "${title}"`);
+        }
         
-        console.log(`📝 Set title: "${titleElement.textContent}"`);
-        console.log(`🏪 Set vendor: "${vendorElement.textContent}"`);
-        console.log(`💰 Set prices: ${currentPriceElement.textContent} / ${originalPriceElement.textContent}`);
+        // Заполняем поставщика
+        if (vendorElement) {
+            const vendor = item.vendor_name || item.vendor || item.supplier || 'Поставщик не указан';
+            vendorElement.textContent = vendor;
+            console.log(`✅ Set vendor: "${vendor}"`);
+        }
         
-        // Добавляем обработчики для контролов
-        const minusBtn = itemElement.querySelector('.item-minus-btn');
-        const plusBtn = itemElement.querySelector('.item-plus-btn');
-        const removeBtn = itemElement.querySelector('.item-remove-btn');
-        const quantitySpan = itemElement.querySelector('.item-quantity');
+        // Заполняем цену
+        if (currentPriceElement) {
+            const price = item.current_price || item.price || item.discounted_price || 0;
+            const formattedPrice = typeof price === 'number' ? price.toLocaleString() : price;
+            currentPriceElement.textContent = `${formattedPrice} сум`;
+            console.log(`✅ Set price: ${formattedPrice} сум`);
+        }
         
-        // Устанавливаем начальное количество
-        quantitySpan.textContent = item.quantity || 1;
-        
-        // Обработчики для изменения количества с улучшенной обратной связью
-        minusBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const currentQty = parseInt(quantitySpan.textContent);
-            if (currentQty > 1) {
-                quantitySpan.textContent = currentQty - 1;
-                this.updateQuickSetItemQuantity(setIndex, itemIndex, currentQty - 1);
-                this.addHapticFeedback();
-                minusBtn.style.animation = 'pulse 0.3s ease';
-                setTimeout(() => minusBtn.style.animation = '', 300);
+        // Заполняем оригинальную цену
+        if (originalPriceElement) {
+            const originalPrice = item.original_price || item.old_price || 0;
+            const currentPrice = item.current_price || item.price || item.discounted_price || 0;
+            
+            if (originalPrice > currentPrice && originalPrice > 0) {
+                const formattedOriginalPrice = typeof originalPrice === 'number' ? originalPrice.toLocaleString() : originalPrice;
+                originalPriceElement.textContent = `${formattedOriginalPrice} сум`;
+                originalPriceElement.style.display = 'inline';
+                console.log(`✅ Set original price: ${formattedOriginalPrice} сум`);
+            } else {
+                originalPriceElement.style.display = 'none';
+                console.log(`✅ Hide original price (no discount)`);
             }
-        });
+        }
         
-        plusBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const currentQty = parseInt(quantitySpan.textContent);
-            quantitySpan.textContent = currentQty + 1;
-            this.updateQuickSetItemQuantity(setIndex, itemIndex, currentQty + 1);
-            this.addHapticFeedback();
-            plusBtn.style.animation = 'pulse 0.3s ease';
-            setTimeout(() => plusBtn.style.animation = '', 300);
-        });
+        console.log(`📝 Set title: "${titleElement ? titleElement.textContent : 'N/A'}"`);
+        console.log(`🏪 Set vendor: "${vendorElement ? vendorElement.textContent : 'N/A'}"`);
+        console.log(`💰 Set prices: ${currentPriceElement ? currentPriceElement.textContent : 'N/A'} / ${originalPriceElement ? originalPriceElement.textContent : 'N/A'}`);
         
-        removeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.removeQuickSetItem(setIndex, itemIndex);
-            this.addHapticFeedback();
-            removeBtn.style.animation = 'pulse 0.3s ease';
-            setTimeout(() => removeBtn.style.animation = '', 300);
-        });
+        // Добавляем обработчик для кнопки добавления
+        const addBtn = itemElement.querySelector('.add-item-btn');
+        
+        if (addBtn) {
+            addBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Добавляем товар в корзину
+                this.addItemToCart(item);
+                
+                // Анимация кнопки
+                if (addBtn.style) {
+                    addBtn.style.animation = 'pulse 0.3s ease';
+                    setTimeout(() => {
+                        if (addBtn.style) addBtn.style.animation = '';
+                    }, 300);
+                }
+                
+                this.addHapticFeedback();
+            });
+        }
         
         return itemElement;
+    }
+    
+    addItemToCart(item) {
+        const existingItem = this.cart.find(cartItem => cartItem.id === item.id);
+        
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            this.cart.push({
+                id: item.id,
+                title: item.title || item.name,
+                vendor_name: item.vendor_name || item.vendor,
+                current_price: item.current_price || item.price,
+                original_price: item.original_price,
+                image_url: item.image_url || item.image,
+                quantity: 1
+            });
+        }
+        
+        // Сохраняем корзину
+        localStorage.setItem('foodsave_cart', JSON.stringify(this.cart));
+        
+        // Обновляем отображение
+        this.renderCart();
+        this.updateCartCounter();
+        
+        this.showNotification(`Добавлен товар "${item.title || item.name}"! 🛒`, 'success');
+        this.addHapticFeedback();
     }
     
     addQuickSetToCart(quickSet) {
@@ -4494,7 +4685,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- ===== МОДАЛЬНОЕ ОКНО БЫСТРЫХ НАБОРОВ ===== -->
+<!-- ===== ПРЕМИУМ МОДАЛЬНОЕ ОКНО БЫСТРЫХ НАБОРОВ 2.0 ===== -->
 <div class="modal" id="quickSetsModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -4511,14 +4702,17 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-<!-- Шаблон быстрого набора -->
+<!-- Премиум шаблон быстрого набора 2.0 -->
 <template id="quickSetTemplate">
     <div class="quick-set">
         <div class="quick-set-header">
-            <h4 class="quick-set-title"></h4>
-            <p class="quick-set-description"></p>
+            <div>
+                <h4 class="quick-set-title"></h4>
+                <p class="quick-set-description"></p>
+            </div>
             <button class="edit-set-btn" title="Редактировать набор">
                 <i class="fas fa-edit"></i>
+                <span>Изменить</span>
             </button>
         </div>
         <div class="quick-set-items">
@@ -4526,18 +4720,18 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="quick-set-actions">
             <button class="add-set-btn">
-                <i class="fas fa-plus"></i>
-                Добавить набор
+                <i class="fas fa-shopping-cart"></i>
+                Добавить в корзину
             </button>
             <button class="customize-set-btn">
-                <i class="fas fa-cog"></i>
-                Настроить
+                <i class="fas fa-sliders-h"></i>
+                Настроить набор
             </button>
         </div>
     </div>
 </template>
 
-<!-- Шаблон товара в наборе -->
+<!-- Премиум шаблон товара в наборе - как в "Добавить товары" -->
 <template id="quickSetItemTemplate">
     <div class="quick-set-item">
         <img src="" alt="" class="quick-set-item-image">
@@ -4550,15 +4744,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
         <div class="quick-set-item-controls">
-            <button class="item-minus-btn" title="Уменьшить">
-                <i class="fas fa-minus"></i>
-            </button>
-            <span class="item-quantity">1</span>
-            <button class="item-plus-btn" title="Увеличить">
+            <button class="add-item-btn" title="Добавить товар">
                 <i class="fas fa-plus"></i>
-            </button>
-            <button class="item-remove-btn" title="Удалить">
-                <i class="fas fa-times"></i>
+                <span>Добавить</span>
             </button>
         </div>
     </div>
