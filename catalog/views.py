@@ -5,6 +5,8 @@ from django.http import JsonResponse
 import math
 from .models import Item, Category, Offer
 from vendors.models import Vendor, Branch
+from django.utils import timezone
+import json
 
 
 class CatalogView(ListView):
@@ -351,6 +353,65 @@ def get_quick_sets(request):
             'quick_sets': quick_sets
         })
         
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+def save_custom_set(request):
+    """API endpoint для сохранения пользовательского набора"""
+    from django.http import JsonResponse
+    import json
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            set_name = data.get('name')
+            items = data.get('items', [])
+            
+            if not set_name or not items:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Необходимо указать название и товары'
+                }, status=400)
+            
+            # Сохраняем в localStorage (в реальном проекте - в БД)
+            custom_sets = json.loads(request.session.get('custom_sets', '[]'))
+            
+            new_set = {
+                'id': len(custom_sets) + 1,
+                'name': set_name,
+                'description': f'Пользовательский набор: {set_name}',
+                'items': items,
+                'created_at': timezone.now().isoformat()
+            }
+            
+            custom_sets.append(new_set)
+            request.session['custom_sets'] = json.dumps(custom_sets)
+            
+            return JsonResponse({
+                'success': True,
+                'set': new_set
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+    
+    return JsonResponse({'success': False, 'error': 'Метод не поддерживается'}, status=405)
+
+def get_custom_sets(request):
+    """API endpoint для получения пользовательских наборов"""
+    try:
+        custom_sets = json.loads(request.session.get('custom_sets', '[]'))
+        return JsonResponse({
+            'success': True,
+            'custom_sets': custom_sets
+        })
     except Exception as e:
         return JsonResponse({
             'success': False,

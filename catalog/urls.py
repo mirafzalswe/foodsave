@@ -11,4 +11,6 @@ urlpatterns = [
     path('search/', views.SearchView.as_view(), name='search'),
     path('api/recommendations/', views.get_recommendations, name='api_recommendations'),
     path('api/quick-sets/', views.get_quick_sets, name='api_quick_sets'),
+    path('api/custom-sets/', views.get_custom_sets, name='api_custom_sets'),
+    path('api/save-custom-set/', views.save_custom_set, name='api_save_custom_set'),
 ]

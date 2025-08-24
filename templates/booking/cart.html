@@ -1172,7 +1172,7 @@ body {
     color: var(--gray-400) !important;
 }
 
-/* ===== МОДАЛЬНОЕ ОКНО ===== */
+/* ===== ПРЕМИАЛЬНОЕ МОДАЛЬНОЕ ОКНО ===== */
 .modal {
     display: none;
     position: fixed;
@@ -1181,52 +1181,75 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content {
-    background-color: white;
-    margin: 5% auto;
+    background: white;
+    margin: 3% auto;
     padding: 0;
-    border-radius: 1.5rem;
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
+    border-radius: 2rem;
+    width: 95%;
+    max-width: 800px;
+    max-height: 85vh;
     overflow: hidden;
-    box-shadow: var(--shadow-xl);
-    animation: modalSlideIn 0.3s ease-out;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--gray-200);
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    padding: 2rem 2.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
     color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 2s infinite;
 }
 
 .modal-header h3 {
     margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    position: relative;
+    z-index: 1;
 }
 
 .modal-close {
-    background: none;
+    background: rgba(255, 255, 255, 0.1);
     border: none;
     color: white;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    transition: var(--transition-normal);
+    padding: 0.75rem;
+    border-radius: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 1;
 }
 
 .modal-close:hover {
     background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .modal-body {
@@ -1300,56 +1323,261 @@ body {
     margin-bottom: 1rem;
 }
 
+/* ===== СТИЛИ ДЛЯ НАСТРОЙКИ НАБОРА (ИДЕАЛЬНЫЕ) ===== */
+.customize-item, .available-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 1.25rem;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    min-height: 110px;
+    max-height: 110px;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ===== СТИЛИ ДЛЯ БЫСТРЫХ НАБОРОВ (КОПИРУЕМ ИЗ НАСТРОЕК) ===== */
 .quick-set-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: var(--gray-50);
-    border-radius: 0.75rem;
-    border: 1px solid var(--gray-200);
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 1.25rem;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    min-height: 110px;
+    max-height: 110px;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.quick-set-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #059669, #10b981, #34d399);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.quick-set-item:hover {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: #059669;
+    transform: translateY(-2px);
+}
+
+.quick-set-item:hover::before {
+    opacity: 1;
+}
+
+.customize-item-image, .available-item-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 0.75rem;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+.quick-set-item-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 0.75rem;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+.customize-item-info, .available-item-info {
+    flex: 1;
+    min-width: 0;
+    max-width: calc(100% - 200px);
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    overflow: hidden;
+}
+
+.quick-set-item-info {
+    flex: 1;
+    min-width: 0;
+    max-width: calc(100% - 200px);
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    overflow: hidden;
+}
+
+.customize-item-title, .available-item-title {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 1rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.quick-set-item-title {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 1rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.customize-item-vendor, .available-item-vendor {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.quick-set-item-vendor {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.customize-item-price, .available-item-price {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.quick-set-item-price {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.customize-item-price .current-price, .available-item-price .current-price {
+    font-weight: 700;
+    color: #059669;
+    font-size: 1rem;
+}
+
+.quick-set-item-price .current-price {
+    font-weight: 700;
+    color: #059669;
+    font-size: 1rem;
+}
+
+.customize-item-price .original-price, .available-item-price .original-price {
+    color: #9ca3af;
+    font-size: 0.875rem;
+    text-decoration: line-through;
+    font-weight: 500;
+}
+
+.quick-set-item-price .original-price {
+    color: #9ca3af;
+    font-size: 0.875rem;
+    text-decoration: line-through;
+    font-weight: 500;
+}
+
+.customize-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    flex-shrink: 0;
+    background: #f8fafc;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    width: 160px;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .quick-set-item-controls {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
     margin-left: auto;
+    flex-shrink: 0;
+    background: #f8fafc;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    width: 160px;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .item-minus-btn, .item-plus-btn, .item-remove-btn {
     background: white;
-    border: 1px solid var(--gray-300);
-    border-radius: 0.375rem;
-    width: 28px;
-    height: 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: var(--transition-normal);
-    font-size: 0.75rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.875rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    color: #64748b;
+    flex-shrink: 0;
 }
 
 .item-minus-btn:hover, .item-plus-btn:hover {
-    background: var(--primary);
+    background: #059669;
     color: white;
-    border-color: var(--primary);
+    border-color: #059669;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
 }
 
 .item-remove-btn:hover {
-    background: var(--danger);
+    background: #ef4444;
     color: white;
-    border-color: var(--danger);
+    border-color: #ef4444;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 .item-quantity {
-    font-weight: 500;
-    color: var(--gray-700);
-    min-width: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    min-width: 35px;
     text-align: center;
-    font-size: 0.875rem;
+    font-size: 1rem;
+    background: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
 }
 
 .quick-set-item-image {
@@ -1400,52 +1628,154 @@ body {
 
 .quick-set-actions {
     display: flex;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 1.5rem;
+    border: 1px solid #e2e8f0;
 }
 
 .add-set-btn, .customize-set-btn {
     flex: 1;
-    background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    color: white;
+    border: none;
+    border-radius: 1.25rem;
+    padding: 1.25rem 2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 1.125rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: -0.025em;
+}
+
+.add-set-btn::before, .customize-set-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: all 0.6s ease;
+}
+
+.add-set-btn:hover::before, .customize-set-btn:hover::before {
+    left: 100%;
+}
+
+.add-set-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.customize-set-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+.customize-set-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3), 0 10px 10px -5px rgba(59, 130, 246, 0.2);
+}
+
+/* ===== КНОПКА ДОБАВИТЬ В ДОСТУПНЫХ ТОВАРАХ ===== */
+.add-item-btn {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
     color: white;
     border: none;
     border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: var(--transition-normal);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    font-size: 0.875rem;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+    width: 120px;
+    height: 42px;
+    margin-left: auto;
 }
 
-.add-set-btn:hover {
+.add-item-btn:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 12px -1px rgba(5, 150, 105, 0.3);
 }
 
-.customize-set-btn {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+.add-item-btn i {
+    font-size: 0.75rem;
 }
 
-.customize-set-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+/* ===== ПРЕМИАЛЬНЫЕ АНИМАЦИИ ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
-/* ===== АНИМАЦИИ ===== */
 @keyframes modalSlideIn {
     from {
         opacity: 0;
-        transform: translateY(-50px) scale(0.9);
+        transform: translateY(-100px) scale(0.95);
     }
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
 }
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.quick-set-item {
+    animation: slideInUp 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.quick-set-item:nth-child(1) { animation-delay: 0.1s; }
+.quick-set-item:nth-child(2) { animation-delay: 0.2s; }
+.quick-set-item:nth-child(3) { animation-delay: 0.3s; }
+.quick-set-item:nth-child(4) { animation-delay: 0.4s; }
 
 /* Состояния загрузки и ошибок */
 .loading, .empty-state, .error-state {
@@ -1468,24 +1798,269 @@ body {
     font-style: italic;
 }
 
-/* Адаптивность */
+/* ===== МОДАЛЬНОЕ ОКНО НАСТРОЙКИ ===== */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--gray-200);
+    background: var(--gray-50);
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    font-size: 0.875rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.btn-secondary:hover {
+    background: var(--gray-300);
+}
+
+.customize-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--gray-800);
+    font-size: 0.875rem;
+}
+
+.form-control {
+    padding: 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    transition: var(--transition-normal);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.customize-items, .available-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: 0.75rem;
+    border: 1px solid var(--gray-200);
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 768px) {
     .modal-content {
-        margin: 10% auto;
-        width: 95%;
+        margin: 5% auto;
+        width: 98%;
+        max-height: 90vh;
+        border-radius: 1.5rem;
     }
     
-    .quick-set-items {
+    .modal-header {
+        padding: 1.5rem;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.25rem;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .quick-set-items, .customize-items, .available-items {
         grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .customize-item, .available-item {
+        padding: 1.25rem;
+        min-height: 90px;
+        max-height: 90px;
+        gap: 0.75rem;
     }
     
     .quick-set-item {
+        padding: 1.25rem;
+        min-height: 90px;
+        max-height: 90px;
+        gap: 0.75rem;
+    }
+    
+    .customize-item-image, .available-item-image {
+        width: 50px;
+        height: 50px;
+        border-radius: 0.5rem;
+    }
+    
+    .quick-set-item-image {
+        width: 50px;
+        height: 50px;
+        border-radius: 0.5rem;
+    }
+    
+    .customize-item-title, .available-item-title {
+        font-size: 0.875rem;
+    }
+    
+    .quick-set-item-title {
+        font-size: 0.875rem;
+    }
+    
+    .customize-item-vendor, .available-item-vendor {
+        font-size: 0.75rem;
+    }
+    
+    .quick-set-item-vendor {
+        font-size: 0.75rem;
+    }
+    
+    .customize-item-price .current-price, .available-item-price .current-price {
+        font-size: 0.875rem;
+    }
+    
+    .quick-set-item-price .current-price {
+        font-size: 0.875rem;
+    }
+    
+    .customize-item-price .original-price, .available-item-price .original-price {
+        font-size: 0.75rem;
+    }
+    
+    .quick-set-item-price .original-price {
+        font-size: 0.75rem;
+    }
+    
+    .customize-item-controls {
+        gap: 0.5rem;
         padding: 0.5rem;
+        border-radius: 0.5rem;
+        width: 140px;
+    }
+    
+    .quick-set-item-controls {
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        width: 140px;
+    }
+    
+    .item-minus-btn, .item-plus-btn, .item-remove-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+        border-radius: 0.375rem;
+    }
+    
+    .item-quantity {
+        min-width: 28px;
+        font-size: 0.875rem;
+        padding: 0.375rem 0.5rem;
+        border-radius: 0.375rem;
+    }
+    
+    .add-item-btn {
+        width: 100px;
+        height: 36px;
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .quick-set-actions {
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+    }
+    
+    .add-set-btn, .customize-set-btn {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 1rem;
+    }
+    
+    .customize-items, .available-items {
+        max-height: 200px;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1.5rem;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 1rem 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        margin: 2% auto;
+        width: 99%;
+        border-radius: 1rem;
+    }
+    
+    .quick-set-item {
+        padding: 0.75rem;
+        min-height: 70px;
     }
     
     .quick-set-item-image {
         width: 40px;
         height: 40px;
+    }
+    
+    .quick-set-item-controls {
+        padding: 0.375rem;
+        gap: 0.375rem;
+    }
+    
+    .item-minus-btn, .item-plus-btn, .item-remove-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+    
+    .item-quantity {
+        min-width: 28px;
+        font-size: 0.875rem;
+        padding: 0.25rem 0.375rem;
     }
 }
 
@@ -2952,6 +3527,8 @@ class FriendlySmartCart {
             const data = await response.json();
             
             if (data.success && data.quick_sets.length > 0) {
+                // Сохраняем текущие наборы для редактирования
+                this.currentQuickSets = data.quick_sets;
                 this.renderQuickSets(data.quick_sets);
             } else {
                 container.innerHTML = '<div class="empty-state">Нет доступных наборов</div>';
@@ -2970,7 +3547,7 @@ class FriendlySmartCart {
         
         container.innerHTML = '';
         
-        quickSets.forEach(quickSet => {
+        quickSets.forEach((quickSet, setIndex) => {
             const quickSetElement = template.content.cloneNode(true);
             
             // Заполняем заголовок
@@ -2979,20 +3556,25 @@ class FriendlySmartCart {
             
             // Добавляем товары
             const itemsContainer = quickSetElement.querySelector('.quick-set-items');
-            quickSet.items.forEach(item => {
-                const itemElement = this.createQuickSetItemElement(item);
+            quickSet.items.forEach((item, itemIndex) => {
+                const itemElement = this.createQuickSetItemElement(item, setIndex, itemIndex);
                 itemsContainer.appendChild(itemElement);
             });
             
-            // Добавляем обработчик для кнопки
+            // Добавляем обработчики для кнопок
             const addSetBtn = quickSetElement.querySelector('.add-set-btn');
+            const customizeSetBtn = quickSetElement.querySelector('.customize-set-btn');
+            const editSetBtn = quickSetElement.querySelector('.edit-set-btn');
+            
             addSetBtn.addEventListener('click', () => this.addQuickSetToCart(quickSet));
+            customizeSetBtn.addEventListener('click', () => this.customizeQuickSet(quickSet, setIndex));
+            editSetBtn.addEventListener('click', () => this.editQuickSet(quickSet, setIndex));
             
             container.appendChild(quickSetElement);
         });
     }
     
-    createQuickSetItemElement(item) {
+    createQuickSetItemElement(item, setIndex, itemIndex) {
         const template = document.getElementById('quickSetItemTemplate');
         const itemElement = template.content.cloneNode(true);
         
@@ -3005,6 +3587,49 @@ class FriendlySmartCart {
         itemElement.querySelector('.current-price').textContent = `${item.current_price.toLocaleString()} сум`;
         itemElement.querySelector('.original-price').textContent = `${item.original_price.toLocaleString()} сум`;
         
+        // Добавляем обработчики для контролов
+        const minusBtn = itemElement.querySelector('.item-minus-btn');
+        const plusBtn = itemElement.querySelector('.item-plus-btn');
+        const removeBtn = itemElement.querySelector('.item-remove-btn');
+        const quantitySpan = itemElement.querySelector('.item-quantity');
+        
+        // Устанавливаем начальное количество
+        quantitySpan.textContent = item.quantity || 1;
+        
+        // Обработчики для изменения количества с улучшенной обратной связью
+        minusBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const currentQty = parseInt(quantitySpan.textContent);
+            if (currentQty > 1) {
+                quantitySpan.textContent = currentQty - 1;
+                this.updateQuickSetItemQuantity(setIndex, itemIndex, currentQty - 1);
+                this.addHapticFeedback();
+                minusBtn.style.animation = 'pulse 0.3s ease';
+                setTimeout(() => minusBtn.style.animation = '', 300);
+            }
+        });
+        
+        plusBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const currentQty = parseInt(quantitySpan.textContent);
+            quantitySpan.textContent = currentQty + 1;
+            this.updateQuickSetItemQuantity(setIndex, itemIndex, currentQty + 1);
+            this.addHapticFeedback();
+            plusBtn.style.animation = 'pulse 0.3s ease';
+            setTimeout(() => plusBtn.style.animation = '', 300);
+        });
+        
+        removeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.removeQuickSetItem(setIndex, itemIndex);
+            this.addHapticFeedback();
+            removeBtn.style.animation = 'pulse 0.3s ease';
+            setTimeout(() => removeBtn.style.animation = '', 300);
+        });
+        
         return itemElement;
     }
     
@@ -3013,9 +3638,10 @@ class FriendlySmartCart {
         
         quickSet.items.forEach(item => {
             const existingItem = this.cart.find(cartItem => cartItem.id === item.id);
+            const quantity = item.quantity || 1;
             
             if (existingItem) {
-                existingItem.quantity += 1;
+                existingItem.quantity += quantity;
             } else {
                 this.cart.push({
                     id: item.id,
@@ -3024,10 +3650,10 @@ class FriendlySmartCart {
                     current_price: item.current_price,
                     original_price: item.original_price,
                     image_url: item.image_url,
-                    quantity: 1
+                    quantity: quantity
                 });
             }
-            addedCount++;
+            addedCount += quantity;
         });
         
         // Правильно сохраняем корзину
@@ -3072,6 +3698,282 @@ class FriendlySmartCart {
     closeQuickSetsModal() {
         const modal = document.getElementById('quickSetsModal');
         modal.style.display = 'none';
+    }
+    
+    // ===== ФУНКЦИИ РЕДАКТИРОВАНИЯ НАБОРОВ =====
+    updateQuickSetItemQuantity(setIndex, itemIndex, quantity) {
+        // Обновляем количество товара в наборе
+        if (this.currentQuickSets && this.currentQuickSets[setIndex] && this.currentQuickSets[setIndex].items[itemIndex]) {
+            this.currentQuickSets[setIndex].items[itemIndex].quantity = quantity;
+            this.showNotification('Количество обновлено! 📦', 'success');
+        }
+    }
+    
+    removeQuickSetItem(setIndex, itemIndex) {
+        // Удаляем товар из набора
+        if (this.currentQuickSets && this.currentQuickSets[setIndex] && this.currentQuickSets[setIndex].items[itemIndex]) {
+            const removedItem = this.currentQuickSets[setIndex].items[itemIndex];
+            this.currentQuickSets[setIndex].items.splice(itemIndex, 1);
+            
+            // Если набор стал пустым, удаляем его
+            if (this.currentQuickSets[setIndex].items.length === 0) {
+                this.currentQuickSets.splice(setIndex, 1);
+            }
+            
+            // Перерисовываем наборы
+            this.renderQuickSets(this.currentQuickSets);
+            this.showNotification(`"${removedItem.title}" удален из набора! 🗑️`, 'info');
+        }
+    }
+    
+    customizeQuickSet(quickSet, setIndex) {
+        // Показываем модальное окно для настройки набора
+        this.showCustomizeModal(quickSet, setIndex);
+    }
+    
+    editQuickSet(quickSet, setIndex) {
+        // Режим редактирования набора
+        this.showEditModal(quickSet, setIndex);
+    }
+    
+    showCustomizeModal(quickSet, setIndex) {
+        this.currentEditingSet = { ...quickSet };
+        this.currentEditingSetIndex = setIndex;
+        
+        const modal = document.getElementById('customizeModal');
+        const setNameInput = document.getElementById('setName');
+        const customizeItems = document.getElementById('customizeItems');
+        
+        // Заполняем форму
+        setNameInput.value = quickSet.name;
+        
+        // Показываем товары в наборе
+        customizeItems.innerHTML = '';
+        quickSet.items.forEach((item, index) => {
+            const itemElement = this.createCustomizeItemElement(item, index);
+            customizeItems.appendChild(itemElement);
+        });
+        
+        // Загружаем доступные товары
+        this.loadAvailableItems();
+        
+        // Показываем модальное окно
+        modal.style.display = 'block';
+        
+        // Добавляем обработчики
+        this.setupCustomizeModalHandlers();
+    }
+    
+    showEditModal(quickSet, setIndex) {
+        this.showCustomizeModal(quickSet, setIndex);
+    }
+    
+    // ===== ФУНКЦИИ НАСТРОЙКИ НАБОРА =====
+    createCustomizeItemElement(item, index) {
+        const div = document.createElement('div');
+        div.className = 'quick-set-item';
+        div.innerHTML = `
+            <img src="${item.image_url || ''}" alt="${item.title}" class="quick-set-item-image">
+            <div class="quick-set-item-info">
+                <div class="quick-set-item-title">${item.title}</div>
+                <div class="quick-set-item-vendor">${item.vendor_name}</div>
+                <div class="quick-set-item-price">
+                    <span class="current-price">${item.current_price.toLocaleString()} сум</span>
+                    <span class="original-price">${item.original_price.toLocaleString()} сум</span>
+                </div>
+            </div>
+            <div class="quick-set-item-controls">
+                <button class="item-minus-btn" title="Уменьшить" onclick="this.updateCustomizeItemQuantity(${index}, -1)">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <span class="item-quantity">${item.quantity || 1}</span>
+                <button class="item-plus-btn" title="Увеличить" onclick="this.updateCustomizeItemQuantity(${index}, 1)">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="item-remove-btn" title="Удалить" onclick="this.removeCustomizeItem(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        return div;
+    }
+    
+    async loadAvailableItems() {
+        try {
+            const response = await fetch('/catalog/api/recommendations/');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.renderAvailableItems(data.recommendations);
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки доступных товаров:', error);
+        }
+    }
+    
+    renderAvailableItems(items) {
+        const container = document.getElementById('availableItems');
+        container.innerHTML = '';
+        
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'available-item';
+            div.innerHTML = `
+                <img src="${item.image_url || ''}" alt="${item.title}" class="available-item-image">
+                <div class="available-item-info">
+                    <div class="available-item-title">${item.title}</div>
+                    <div class="available-item-vendor">${item.vendor_name}</div>
+                    <div class="available-item-price">
+                        <span class="current-price">${item.current_price.toLocaleString()} сум</span>
+                        <span class="original-price">${item.original_price.toLocaleString()} сум</span>
+                    </div>
+                </div>
+                <button class="add-item-btn" data-item-id="${item.id}">
+                    <i class="fas fa-plus"></i> Добавить
+                </button>
+            `;
+            
+            // Добавляем обработчик для кнопки
+            const addBtn = div.querySelector('.add-item-btn');
+            addBtn.addEventListener('click', () => this.addItemToCustomize(item));
+            
+            container.appendChild(div);
+        });
+    }
+    
+    setupCustomizeModalHandlers() {
+        const modal = document.getElementById('customizeModal');
+        const closeBtn = document.getElementById('closeCustomizeModal');
+        const cancelBtn = document.getElementById('cancelCustomize');
+        const saveBtn = document.getElementById('saveCustomSet');
+        
+        closeBtn.onclick = () => this.closeCustomizeModal();
+        cancelBtn.onclick = () => this.closeCustomizeModal();
+        saveBtn.onclick = () => this.saveCustomSet();
+        
+        modal.onclick = (e) => {
+            if (e.target === modal) this.closeCustomizeModal();
+        };
+    }
+    
+    closeCustomizeModal() {
+        document.getElementById('customizeModal').style.display = 'none';
+    }
+    
+    async saveCustomSet() {
+        const setName = document.getElementById('setName').value;
+        if (!setName.trim()) {
+            this.showNotification('Введите название набора!', 'error');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/catalog/api/save-custom-set/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCSRFToken()
+                },
+                body: JSON.stringify({
+                    name: setName,
+                    items: this.currentEditingSet.items
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                this.showNotification('Набор сохранен! 💾', 'success');
+                this.closeCustomizeModal();
+                this.showQuickSets(); // Обновляем список наборов
+            }
+        } catch (error) {
+            this.showNotification('Ошибка сохранения набора!', 'error');
+        }
+    }
+    
+    // ===== ФУНКЦИИ ДЛЯ НАСТРОЙКИ НАБОРА =====
+    addItemToCustomize(item) {
+        if (!this.currentEditingSet) return;
+        
+        // Проверяем, есть ли уже такой товар в наборе
+        const existingItem = this.currentEditingSet.items.find(i => i.id === item.id);
+        
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            this.currentEditingSet.items.push({
+                ...item,
+                quantity: 1
+            });
+        }
+        
+        // Обновляем отображение товаров в наборе
+        this.updateCustomizeItemsDisplay();
+        
+        this.showNotification(`"${item.title}" добавлен в набор! 📦`, 'success');
+        this.addHapticFeedback();
+    }
+    
+    updateCustomizeItemsDisplay() {
+        const container = document.getElementById('customizeItems');
+        container.innerHTML = '';
+        
+        this.currentEditingSet.items.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'customize-item';
+            div.innerHTML = `
+                <img src="${item.image_url || ''}" alt="${item.title}" class="customize-item-image">
+                <div class="customize-item-info">
+                    <div class="customize-item-title">${item.title}</div>
+                    <div class="customize-item-vendor">${item.vendor_name}</div>
+                    <div class="customize-item-price">
+                        <span class="current-price">${item.current_price.toLocaleString()} сум</span>
+                        <span class="original-price">${item.original_price.toLocaleString()} сум</span>
+                    </div>
+                </div>
+                <div class="customize-item-controls">
+                    <button class="item-minus-btn" title="Уменьшить">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span class="item-quantity">${item.quantity || 1}</span>
+                    <button class="item-plus-btn" title="Увеличить">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="item-remove-btn" title="Удалить">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            // Добавляем обработчики
+            const minusBtn = div.querySelector('.item-minus-btn');
+            const plusBtn = div.querySelector('.item-plus-btn');
+            const removeBtn = div.querySelector('.item-remove-btn');
+            const quantitySpan = div.querySelector('.item-quantity');
+            
+            minusBtn.addEventListener('click', () => {
+                if (item.quantity > 1) {
+                    item.quantity -= 1;
+                    quantitySpan.textContent = item.quantity;
+                    this.addHapticFeedback();
+                }
+            });
+            
+            plusBtn.addEventListener('click', () => {
+                item.quantity += 1;
+                quantitySpan.textContent = item.quantity;
+                this.addHapticFeedback();
+            });
+            
+            removeBtn.addEventListener('click', () => {
+                this.currentEditingSet.items.splice(index, 1);
+                this.updateCustomizeItemsDisplay();
+                this.showNotification(`"${item.title}" удален из набора! 🗑️`, 'info');
+                this.addHapticFeedback();
+            });
+            
+            container.appendChild(div);
+        });
     }
     
     saveCart() {
@@ -3636,4 +4538,40 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </template>
+
+<!-- Модальное окно настройки набора -->
+<div class="modal" id="customizeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>⚙️ Настройка набора</h3>
+            <button class="modal-close" id="closeCustomizeModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="customize-form">
+                <div class="form-group">
+                    <label for="setName">Название набора:</label>
+                    <input type="text" id="setName" class="form-control" placeholder="Мой набор">
+                </div>
+                <div class="form-group">
+                    <label>Товары в наборе:</label>
+                    <div id="customizeItems" class="customize-items">
+                        <!-- Товары будут добавлены через JavaScript -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Добавить товары:</label>
+                    <div id="availableItems" class="available-items">
+                        <!-- Доступные товары будут загружены -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelCustomize">Отмена</button>
+            <button class="btn btn-primary" id="saveCustomSet">Сохранить набор</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
