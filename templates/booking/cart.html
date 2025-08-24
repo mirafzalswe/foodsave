@@ -3545,6 +3545,8 @@ class FriendlySmartCart {
         const container = document.getElementById('quickSetsContainer');
         const template = document.getElementById('quickSetTemplate');
         
+        console.log('🔍 Rendering quick sets:', quickSets);
+        
         container.innerHTML = '';
         
         quickSets.forEach((quickSet, setIndex) => {
@@ -3556,7 +3558,10 @@ class FriendlySmartCart {
             
             // Добавляем товары
             const itemsContainer = quickSetElement.querySelector('.quick-set-items');
+            console.log(`📦 Adding ${quickSet.items.length} items to set "${quickSet.name}"`);
+            
             quickSet.items.forEach((item, itemIndex) => {
+                console.log(`  - Item ${itemIndex}: ${item.title} (${item.image_url})`);
                 const itemElement = this.createQuickSetItemElement(item, setIndex, itemIndex);
                 itemsContainer.appendChild(itemElement);
             });
@@ -3578,14 +3583,34 @@ class FriendlySmartCart {
         const template = document.getElementById('quickSetItemTemplate');
         const itemElement = template.content.cloneNode(true);
         
+        console.log(`🎨 Creating element for item: ${item.title}`);
+        
         const imageElement = itemElement.querySelector('.quick-set-item-image');
-        imageElement.src = item.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMDAgODBDMTA4LjgzNyA4MCAxMTYgODcuMTYzNCAxMTYgOTZDMTE2IDEwNC44MzcgMTA4LjgzNyAxMTIgMTAwIDExMkM5MS4xNjM0IDExMiA4NCAxMDQuODM3IDg0IDk2Qzg0IDg3LjE2MzQgOTEuMTYzNCA4MCAxMDAgODBaIiBmaWxsPSIjOUI5QkEwIi8+CjxwYXRoIGQ9Ik0xMDAgMTI4QzExMi4yMDkgMTI4IDEyMiAxMTguMjA5IDEyMiAxMDZIMTgwQzE4MCAxMTguMjA5IDE3MC4yMDkgMTI4IDE1OCAxMjhIMTAwWiIgZmlsbD0iIzlCOUJBQCIvPgo8L3N2Zz4K';
+        // Используем placeholder если нет изображения
+        imageElement.src = item.image_url || '/static/images/placeholder.jpg';
         imageElement.alt = item.title;
         
-        itemElement.querySelector('.quick-set-item-title').textContent = item.title;
-        itemElement.querySelector('.quick-set-item-vendor').textContent = item.vendor_name;
-        itemElement.querySelector('.current-price').textContent = `${item.current_price.toLocaleString()} сум`;
-        itemElement.querySelector('.original-price').textContent = `${item.original_price.toLocaleString()} сум`;
+        console.log(`🖼️ Image src: ${imageElement.src}`);
+        
+        // Добавляем обработчик ошибки для изображения
+        imageElement.onerror = function() {
+            console.log(`❌ Image failed to load: ${this.src}`);
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMDAgODBDMTA4LjgzNyA4MCAxMTYgODcuMTYzNCAxMTYgOTZDMTE2IDEwNC44MzcgMTA4LjgzNyAxMTIgMTAwIDExMkM5MS4xNjM0IDExMiA4NCAxMDQuODM3IDg0IDk2Qzg0IDg3LjE2MzQgOTEuMTYzNCA4MCAxMDAgODBaIiBmaWxsPSIjOUI5QkEwIi8+CjxwYXRoIGQ9Ik0xMDAgMTI4QzExMi4yMDkgMTI4IDEyMiAxMTguMjA5IDEyMiAxMDZIMTgwQzE4MCAxMTguMjA5IDE3MC4yMDkgMTI4IDE1OCAxMjhIMTAwWiIgZmlsbD0iIzlCOUJBQCIvPgo8L3N2Zz4K';
+        };
+        
+        const titleElement = itemElement.querySelector('.quick-set-item-title');
+        const vendorElement = itemElement.querySelector('.quick-set-item-vendor');
+        const currentPriceElement = itemElement.querySelector('.current-price');
+        const originalPriceElement = itemElement.querySelector('.original-price');
+        
+        titleElement.textContent = item.title;
+        vendorElement.textContent = item.vendor_name;
+        currentPriceElement.textContent = `${item.current_price.toLocaleString()} сум`;
+        originalPriceElement.textContent = `${item.original_price.toLocaleString()} сум`;
+        
+        console.log(`📝 Set title: "${titleElement.textContent}"`);
+        console.log(`🏪 Set vendor: "${vendorElement.textContent}"`);
+        console.log(`💰 Set prices: ${currentPriceElement.textContent} / ${originalPriceElement.textContent}`);
         
         // Добавляем обработчики для контролов
         const minusBtn = itemElement.querySelector('.item-minus-btn');

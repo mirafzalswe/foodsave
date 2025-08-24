@@ -304,7 +304,7 @@ def get_quick_sets(request):
                     'current_price': float(offer.current_price),
                     'original_price': float(offer.original_price),
                     'discount_percent': int(offer.discount_percent),
-                    'image_url': offer.item.images.filter(is_primary=True).first().image.url if offer.item.images.filter(is_primary=True).first() else ''
+                    'image_url': offer.item.images.filter(is_primary=True).first().image.url if offer.item.images.filter(is_primary=True).first() else '/static/images/placeholder.jpg'
                 } for offer in dairy_items]
             })
         
@@ -325,7 +325,7 @@ def get_quick_sets(request):
                     'current_price': float(offer.current_price),
                     'original_price': float(offer.original_price),
                     'discount_percent': int(offer.discount_percent),
-                    'image_url': offer.item.images.filter(is_primary=True).first().image.url if offer.item.images.filter(is_primary=True).first() else ''
+                    'image_url': offer.item.images.filter(is_primary=True).first().image.url if offer.item.images.filter(is_primary=True).first() else '/static/images/placeholder.jpg'
                 } for offer in bakery_items]
             })
         
@@ -344,7 +344,7 @@ def get_quick_sets(request):
                     'current_price': float(offer.current_price),
                     'original_price': float(offer.original_price),
                     'discount_percent': int(offer.discount_percent),
-                    'image_url': offer.item.images.filter(is_primary=True).first().image.url if offer.item.images.filter(is_primary=True).first() else ''
+                    'image_url': offer.item.images.filter(is_primary=True).first().image.url if offer.item.images.filter(is_primary=True).first() else '/static/images/placeholder.jpg'
                 } for offer in popular_items]
             })
         
