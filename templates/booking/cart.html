@@ -1258,6 +1258,9 @@ body {
 
 .quick-set-header {
     margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .quick-set-title {
@@ -1271,6 +1274,23 @@ body {
     color: var(--gray-600);
     font-size: 0.875rem;
     margin: 0;
+}
+
+.edit-set-btn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: var(--transition-normal);
+    margin-left: 0.5rem;
+}
+
+.edit-set-btn:hover {
+    background: var(--primary-light);
+    color: white;
 }
 
 .quick-set-items {
@@ -1288,6 +1308,48 @@ body {
     background: var(--gray-50);
     border-radius: 0.75rem;
     border: 1px solid var(--gray-200);
+    position: relative;
+}
+
+.quick-set-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: auto;
+}
+
+.item-minus-btn, .item-plus-btn, .item-remove-btn {
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: 0.375rem;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    font-size: 0.75rem;
+}
+
+.item-minus-btn:hover, .item-plus-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.item-remove-btn:hover {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+.item-quantity {
+    font-weight: 500;
+    color: var(--gray-700);
+    min-width: 20px;
+    text-align: center;
+    font-size: 0.875rem;
 }
 
 .quick-set-item-image {
@@ -1336,8 +1398,14 @@ body {
     text-decoration: line-through;
 }
 
-.add-set-btn {
-    width: 100%;
+.quick-set-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.add-set-btn, .customize-set-btn {
+    flex: 1;
     background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
     color: white;
     border: none;
@@ -1350,9 +1418,19 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    font-size: 0.875rem;
 }
 
 .add-set-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.customize-set-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+}
+
+.customize-set-btn:hover {
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
@@ -2546,7 +2624,7 @@ class FriendlySmartCart {
             checkoutBtnSummary.style.display = 'none';
             smartTips.style.display = 'none';
             this.updateOrderSummary(0, 0);
-
+            this.updateCartCounter();
             return;
         }
         
@@ -2569,9 +2647,9 @@ class FriendlySmartCart {
         
         this.updateOrderSummary(subtotal, this.cart.length);
         this.updateItemCount();
+        this.updateCartCounter();
 
         this.updateSavingsProgress(subtotal);
-
         this.updateSmartTips(subtotal);
         this.updateDeliveryProgress(subtotal);
     }
@@ -2657,8 +2735,8 @@ class FriendlySmartCart {
     updateQuantity(index, change) {
         if (this.cart[index]) {
             this.cart[index].quantity = Math.max(1, this.cart[index].quantity + change);
-            this.saveCart();
-            this.loadCartItems();
+            localStorage.setItem('foodsave_cart', JSON.stringify(this.cart));
+            this.renderCart();
             this.updateCartCounter();
             this.showNotification('Количество обновлено! 💰', 'success');
         }
@@ -2667,8 +2745,8 @@ class FriendlySmartCart {
     updateCartItemQuantity(index, quantity) {
         if (this.cart[index]) {
             this.cart[index].quantity = Math.max(1, quantity);
-            this.saveCart();
-            this.loadCartItems();
+            localStorage.setItem('foodsave_cart', JSON.stringify(this.cart));
+            this.renderCart();
             this.updateCartCounter();
             this.showNotification('Количество обновлено! 💰', 'success');
         }
@@ -2676,8 +2754,8 @@ class FriendlySmartCart {
     
     removeCartItem(index) {
         this.cart.splice(index, 1);
-        this.saveCart();
-        this.loadCartItems();
+        localStorage.setItem('foodsave_cart', JSON.stringify(this.cart));
+        this.renderCart();
         this.updateCartCounter();
         this.showNotification('Товар удален из корзины 💰', 'info');
     }
@@ -2952,8 +3030,13 @@ class FriendlySmartCart {
             addedCount++;
         });
         
-        this.saveCart();
-        this.loadCartItems();
+        // Правильно сохраняем корзину
+        localStorage.setItem('foodsave_cart', JSON.stringify(this.cart));
+        
+        // Обновляем отображение
+        this.renderCart();
+        this.updateCartCounter();
+        
         this.showNotification(`Добавлен набор "${quickSet.name}" (${addedCount} товаров)! 📦`, 'success');
         this.addHapticFeedback();
         
@@ -3293,18 +3376,52 @@ class FriendlySmartCart {
         
         console.log('Текущая корзина:', this.cart);
         
-        this.saveCart();
-        this.loadCartItems();
+        // Правильно сохраняем корзину
+        localStorage.setItem('foodsave_cart', JSON.stringify(this.cart));
+        
+        // Обновляем отображение
+        this.renderCart();
+        this.updateCartCounter();
+        
         this.showNotification(`"${item.title}" добавлен в корзину! 💰`, 'success');
         this.addHapticFeedback();
         
-        // Обновляем рекомендации (убираем добавленный товар)
-        this.loadRecommendations();
+        // Обновляем рекомендации БЕЗ пересоздания обработчиков свайпа
+        this.updateRecommendationsWithoutRecreatingHandlers();
     }
     
     quickViewItem(item) {
         // Переход на страницу товара
         window.location.href = `/catalog/item/${item.id}/`;
+    }
+    
+    // Обновляем рекомендации без пересоздания обработчиков свайпа
+    async updateRecommendationsWithoutRecreatingHandlers() {
+        try {
+            const response = await fetch('/catalog/api/recommendations/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success && data.recommendations.length > 0) {
+                this.renderRecommendations(data.recommendations);
+            } else {
+                this.showRecommendationsEmpty();
+            }
+            
+        } catch (error) {
+            console.error('Ошибка обновления рекомендаций:', error);
+            this.showRecommendationsError();
+        }
     }
     
     updateDeliveryProgress(subtotal) {
@@ -3336,12 +3453,16 @@ class FriendlySmartCart {
         if (!carousel || !prevBtn || !nextBtn) return;
         
         // Плавная прокрутка влево
-        prevBtn.addEventListener('click', () => {
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             this.smoothScrollTo(carousel, -300);
         });
         
         // Плавная прокрутка вправо
-        nextBtn.addEventListener('click', () => {
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             this.smoothScrollTo(carousel, 300);
         });
         
@@ -3413,6 +3534,8 @@ class FriendlySmartCart {
     
     // ===== ПРЕМИАЛЬНАЯ ПЛАВНАЯ АНИМАЦИЯ =====
     smoothScrollTo(carousel, distance) {
+        if (!carousel) return;
+        
         const startPosition = carousel.scrollLeft;
         const targetPosition = startPosition + distance;
         const startTime = performance.now();
@@ -3425,7 +3548,9 @@ class FriendlySmartCart {
             const progress = Math.min(elapsed / duration, 1);
             const easedProgress = easeOutCubic(progress);
             
-            carousel.scrollLeft = startPosition + (distance * easedProgress);
+            if (carousel && carousel.scrollLeft !== undefined) {
+                carousel.scrollLeft = startPosition + (distance * easedProgress);
+            }
             
             if (progress < 1) {
                 requestAnimationFrame(animate);
@@ -3465,14 +3590,23 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="quick-set-header">
             <h4 class="quick-set-title"></h4>
             <p class="quick-set-description"></p>
+            <button class="edit-set-btn" title="Редактировать набор">
+                <i class="fas fa-edit"></i>
+            </button>
         </div>
         <div class="quick-set-items">
             <!-- Товары будут добавлены через JavaScript -->
         </div>
-        <button class="add-set-btn">
-            <i class="fas fa-plus"></i>
-            Добавить набор
-        </button>
+        <div class="quick-set-actions">
+            <button class="add-set-btn">
+                <i class="fas fa-plus"></i>
+                Добавить набор
+            </button>
+            <button class="customize-set-btn">
+                <i class="fas fa-cog"></i>
+                Настроить
+            </button>
+        </div>
     </div>
 </template>
 
@@ -3487,6 +3621,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="current-price"></span>
                 <span class="original-price"></span>
             </div>
+        </div>
+        <div class="quick-set-item-controls">
+            <button class="item-minus-btn" title="Уменьшить">
+                <i class="fas fa-minus"></i>
+            </button>
+            <span class="item-quantity">1</span>
+            <button class="item-plus-btn" title="Увеличить">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="item-remove-btn" title="Удалить">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
 </template>
