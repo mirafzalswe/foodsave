@@ -93,7 +93,7 @@
                         <div class="card h-100 shadow-sm item-card">
                             <div class="position-relative">
                                 {% if item.images.first %}
-                                    <img src="{{ item.images.first.image.url }}" class="card-img-top" alt="" loading="lazy">
+                                    <img src="{{ item.images.first.image.url }}" class="card-img-top" alt="" loading="lazy" data-fallback="{% static 'images/placeholder.jpg' %}" onerror="this.onerror=null;this.src=this.dataset.fallback">
                                 {% else %}
                                     <div class="image-placeholder">
                                         <i class="fas fa-utensils"></i>

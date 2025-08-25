@@ -16,7 +16,7 @@
     <!-- Favicons & Manifest -->
     <link rel="icon" href="{% static 'images/placeholder.jpg' %}" sizes="32x32">
     <link rel="apple-touch-icon" href="{% static 'images/placeholder.jpg' %}">
-    <link rel="manifest" href="data:application/manifest+json,{\"name\":\"FoodSave\",\"short_name\":\"FoodSave\",\"start_url\":\"/\",\"display\":\"standalone\"}">
+    <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
 
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website">
@@ -191,6 +191,18 @@
     </div>
 
     <script>
+    // Global fallback for broken images
+    (function(){
+      const placeholder = "{% static 'images/placeholder.jpg' %}";
+      document.addEventListener('error', function(event){
+        const el = event.target;
+        if (el && el.tagName === 'IMG' && el.src && !el.dataset.fallbackApplied) {
+          el.dataset.fallbackApplied = '1';
+          el.src = placeholder;
+        }
+      }, true);
+    })();
+
     window.showToast = function(message, type='success'){
         const toastEl = document.getElementById('globalToast');
         const bodyEl = document.getElementById('globalToastBody');
