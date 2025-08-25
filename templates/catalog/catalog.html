@@ -46,7 +46,7 @@
                     <a class="chip {% if request.GET.price_range %}active{% endif %}" href="{% url 'catalog:catalog' %}?price_range=0-500"><i class="fas fa-tag me-1"></i>До 30 тыс. сум</a>
                     <a class="chip chip-map" id="mapBtnChip" href="#" onclick="showNearbyItems();return false;"><i class="fas fa-location-dot me-1"></i>Карта</a>
                     <div class="chip-select ms-auto">
-                        <label for="sortSelect" class="me-1 text-muted small">Сортировать</label>
+                        <label for="sortSelect" class="me-1 text-muted small">Сортировка</label>
                         <select class="form-select form-select-sm" id="sortSelect" aria-label="Сортировка каталога">
                             <option value="">По умолчанию</option>
                             <option value="price">По цене</option>
@@ -205,17 +205,31 @@
 .categories-list .list-group-item.is-active { background:#ECFDF5; color:#065F46; border:1px solid #A7F3D0; }
 
 /***** Chips (incl. Map) *****/
-.quick-chips { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-.quick-chips .chip { background:#FFF; color:#374151; border:1px solid #E5E7EB; border-radius:999px; padding:8px 12px; font-weight:600; text-decoration:none; }
+.quick-chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.quick-chips .chip { background:#FFF; color:#374151; border:1px solid #E5E7EB; border-radius:999px; padding:6px 10px; font-weight:600; text-decoration:none; }
 .quick-chips .chip:hover { background:#F9FAFB; }
 .quick-chips .chip.active { background:#059669; color:#FFF; border-color:#059669; }
 .quick-chips .chip-map { border-color:#D1D5DB; color:#111827; }
 .quick-chips .chip-map:hover { background:#F3F4F6; }
 
 /* Sort select as chip */
-.chip-select { display:flex; align-items:center; gap:6px; padding:6px 8px; border:1px solid #E5E7EB; border-radius:999px; background:#FFF; }
-.chip-select select.form-select-sm { border:none; padding:4px 8px; box-shadow:none; min-width: 160px; }
+.chip-select { display:flex; align-items:center; gap:6px; padding:6px 8px; border:1px solid #E5E7EB; border-radius:999px; background:#FFF; flex-shrink:0; }
+.chip-select label { white-space: nowrap; }
+.chip-select select.form-select-sm { border:none; padding:2px 6px; box-shadow:none; min-width: 150px; }
 .chip-select select.form-select-sm:focus { outline:none; box-shadow:none; }
+
+/* Responsive tweaks for chips/sort */
+@media (max-width: 1200px){
+  .chip-select select.form-select-sm { min-width: 140px; }
+}
+@media (max-width: 992px){
+  .quick-chips .chip { padding:5px 9px; }
+  .chip-select label { display:none; }
+  .chip-select select.form-select-sm { min-width: 120px; }
+}
+@media (max-width: 576px){
+  .chip-select select.form-select-sm { min-width: 110px; }
+}
 
 /* Desktop sticky sort/title */
 @media (min-width: 992px){
